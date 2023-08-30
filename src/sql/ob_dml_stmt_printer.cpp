@@ -79,7 +79,7 @@ int ObDMLStmtPrinter::print_hint()
       if (OB_FAIL(query_hint.print_stmt_hint(plan_text, *stmt_, is_root_, ignore_parallel))) {
         LOG_WARN("failed to print stmt hint", K(ret));
       } else if (plan_text.pos_ == *pos_) {
-        // no hint, roolback buffer!
+        // no hint, rolback buffer!
         *pos_ -= strlen(hint_begin);
       } else {
         *pos_ = plan_text.pos_;
@@ -424,7 +424,7 @@ int ObDMLStmtPrinter::print_json_return_type(int64_t value, ObDataType data_type
       break;
     }
     case T_DATETIME: {
-      //oracle mode treate date as datetime
+      //oracle mode treats date as datetime
       DATA_PRINTF("date");
       break;
     }
