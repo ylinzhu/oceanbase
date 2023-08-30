@@ -159,7 +159,7 @@ int ObPhyTableLocation::add_partition_locations(const ObCandiTableLoc &phy_locat
  //                                              replica_loc,
  //                                              part_loc.get_renew_time(),
  //                                              part_loc.get_pg_key()))) {
- //     LOG_WARN("fail to assin part replica loc", K(ret), K(part_loc), K(replica_loc));
+ //     LOG_WARN("fail to assing part replica loc", K(ret), K(part_loc), K(replica_loc));
  //   } else if (OB_FAIL(partition_location_list_.push_back(part_replica_loc))) {
  //     LOG_WARN("fail to push back part replica loc", K(ret), K(part_replica_loc));
  //   }
@@ -193,7 +193,7 @@ int ObPhyTableLocation::assign_from_phy_table_loc_info(const ObCandiTableLoc &ot
  //                                                replica_loc,
  //                                                part_loc.get_renew_time(),
  //                                                part_loc.get_pg_key()))) {
- //       LOG_WARN("fail to assin part replica loc", K(ret), K(part_loc), K(replica_loc));
+ //       LOG_WARN("fail to assing part replica loc", K(ret), K(part_loc), K(replica_loc));
  //     } else if (OB_FAIL(partition_location_list_.push_back(part_replica_loc))) {
  //       LOG_WARN("fail to push back part replica loc", K(ret), K(part_replica_loc));
  //     }
@@ -242,7 +242,7 @@ int ObPhyTableLocation::assign_from_phy_table_loc_info(const ObCandiTableLoc &ot
  //                                                  replica_loc,
  //                                                  part_loc.get_renew_time(),
  //                                                  part_loc.get_pg_key()))) {
- //         LOG_WARN("fail to assin part replica loc", K(ret), K(part_loc), K(replica_loc));
+ //         LOG_WARN("fail to assing part replica loc", K(ret), K(part_loc), K(replica_loc));
  //       } else if (OB_FAIL(partition_location_list_.push_back(part_replica_loc))) {
  //         LOG_WARN("fail to push back part replica loc", K(ret), K(part_replica_loc));
  //       }
