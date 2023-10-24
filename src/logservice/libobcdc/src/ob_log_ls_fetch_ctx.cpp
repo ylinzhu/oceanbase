@@ -408,6 +408,7 @@ int LSFetchCtx::dispatch_(volatile bool &stop_flag, int64_t &pending_trans_count
 }
 
 int LSFetchCtx::read_log(
+    const int64_t &log_id,
     const palf::LogEntry &log_entry,
     const palf::LSN &lsn,
     IObCDCPartTransResolver::MissingLogInfo &missing,
@@ -437,7 +438,7 @@ int LSFetchCtx::read_log(
     switch (base_type) {
       case logservice::ObLogBaseType::TRANS_SERVICE_LOG_BASE_TYPE:
       {
-        if (OB_FAIL(part_trans_resolver_->read(buf, buf_len, pos, lsn, submit_ts, serve_info_, missing, tsi))) {
+        if (OB_FAIL(part_trans_resolver_->read(log_id, buf, buf_len, pos, lsn, submit_ts, serve_info_, missing, tsi))) {
           if (OB_ITEM_NOT_SETTED != ret && OB_IN_STOP_STATE != ret) {
             LOG_ERROR("resolve trans log failed", KR(ret), K(log_entry), K(log_base_header));
           }
@@ -501,6 +502,7 @@ int LSFetchCtx::read_log(
 }
 
 int LSFetchCtx::read_miss_tx_log(
+    const int64_t &log_id,
     const palf::LogEntry &log_entry,
     const palf::LSN &lsn,
     TransStatInfo &tsi,
@@ -526,7 +528,7 @@ int LSFetchCtx::read_miss_tx_log(
     LOG_ERROR("expect trans log while reading miss_log", KR(ret), K(log_entry), K(log_base_header), K(lsn));
   } else {
 
-    if (OB_FAIL(part_trans_resolver_->read(buf, buf_len, pos, lsn, submit_ts, serve_info_, missing, tsi))) {
+    if (OB_FAIL(part_trans_resolver_->read(log_id, buf, buf_len, pos, lsn, submit_ts, serve_info_, missing, tsi))) {
       if (OB_ITEM_NOT_SETTED == ret) {
         // if found new generated miss log while resolving misslog, FetchStream will
         // found new_generated_missing_info not empty and goon with misslog process

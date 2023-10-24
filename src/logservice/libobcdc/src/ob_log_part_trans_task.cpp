@@ -3572,6 +3572,11 @@ void PartTransTask::set_ref_cnt(const int64_t value)
   (void)ATOMIC_SET(&ref_cnt_, value);
 }
 
+void PartTransTask::set_log_id(const int64_t value)
+{
+  (void)ATOMIC_SET(&log_id_, value);
+}
+
 int PartTransTask::init_trace_id_(const ObString &trace_id)
 {
   int ret = OB_SUCCESS;

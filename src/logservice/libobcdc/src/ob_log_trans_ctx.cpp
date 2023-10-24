@@ -311,8 +311,10 @@ int TransCtx::prepare_(
     const transaction::ObLSLogInfoArray &part_array = host.get_participants();
     int64_t part_count = host.get_participant_count();
     const int64_t trans_commit_version = host.get_trans_commit_version();
+    int64_t log_id = host.get_log_id();
     tenant_id_ = tenant_id;
     trans_id_ = trans_id;
+    log_id_ = log_id;
     // default serve
     bool is_serving_host_part = true;
 
@@ -438,7 +440,7 @@ int TransCtx::init_trans_id_str_()
   char trans_id_buf[TRANS_ID_STR_BUF_LEN];
   int64_t pos = 0;
 
-  if (OB_FAIL(common::databuff_printf(trans_id_buf, TRANS_ID_STR_BUF_LEN, pos, "%lu_%ld", tenant_id_, trans_id_.get_id()))) {
+  if (OB_FAIL(common::databuff_printf(trans_id_buf, TRANS_ID_STR_BUF_LEN, pos, "%lu_%ld_%ld", tenant_id_, trans_id_.get_id(), log_id_))) {
     LOG_ERROR("databuff_printf trans_id_str failed", KR(ret), K_(tenant_id), K_(trans_id), K(TRANS_ID_STR_BUF_LEN), K(pos));
   } else if (OB_UNLIKELY(pos <= 0 || pos >= TRANS_ID_STR_BUF_LEN)) {
     ret = OB_ERR_UNEXPECTED;

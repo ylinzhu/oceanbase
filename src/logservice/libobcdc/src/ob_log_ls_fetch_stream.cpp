@@ -825,6 +825,7 @@ int FetchStream::read_group_entry_(palf::LogGroupEntry &group_entry,
         LOG_ERROR("get_log_entry failed", KR(ret), K(entry_iter), K(group_entry),
             K(group_start_lsn), K_(ls_fetch_ctx));
       } else if (OB_FAIL(ls_fetch_ctx_->read_log(
+          group_entry.get_header().get_log_id(),
           log_entry,
           entry_lsn,
           missing_info,
@@ -835,7 +836,7 @@ int FetchStream::read_group_entry_(palf::LogGroupEntry &group_entry,
           const bool need_reconsume = missing_info.need_reconsume_commit_log_entry();
           KickOutReason fail_reason = NONE;
 
-          if (OB_FAIL(handle_log_miss_(log_entry, missing_info, local_tsi, stop_flag, fail_reason))) {
+          if (OB_FAIL(handle_log_miss_(group_entry.get_header().get_log_id(),log_entry, missing_info, local_tsi, stop_flag, fail_reason))) {
             if (OB_NEED_RETRY == ret) {
               int tmp_ret = OB_SUCCESS;
               // need switch other server(fetch_stream) to fetch log
@@ -859,6 +860,7 @@ int FetchStream::read_group_entry_(palf::LogGroupEntry &group_entry,
 
             // all misslog are handled, and need reconsume trans_state_log in log_entry
             if (OB_FAIL(ls_fetch_ctx_->read_log(
+                group_entry.get_header().get_log_id(),
                 log_entry,
                 entry_lsn,
                 reconsume_miss_info,
@@ -1601,6 +1603,7 @@ int FetchStream::fetch_miss_log_(
 }
 
 int FetchStream::handle_log_miss_(
+    const int64_t &log_id,
     palf::LogEntry &log_entry,
     IObCDCPartTransResolver::MissingLogInfo &org_missing_info,
     TransStatInfo &tsi,
@@ -1678,6 +1681,7 @@ int FetchStream::handle_log_miss_(
                   LOG_ERROR("misslog fetched is not match batched_misslog_lsn_arr requested", KR(ret),
                       K(next_miss_lsn), K(batch_cnt), K(resp_log_cnt), K(batched_misslog_lsn_arr), K(resp), K_(ls_fetch_ctx));
                 } else if (OB_FAIL(read_batch_misslog_(
+                    log_id,
                     resp,
                     fetched_missing_log_cnt,
                     tsi,
@@ -1789,6 +1793,7 @@ int FetchStream::build_batch_misslog_lsn_arr_(
 }
 
 int FetchStream::read_batch_misslog_(
+    const int64_t &log_id,
     const obrpc::ObCdcLSFetchLogResp &resp,
     int64_t &fetched_missing_log_cnt,
     TransStatInfo &tsi,
@@ -1840,7 +1845,7 @@ int FetchStream::read_batch_misslog_(
         if (OB_FAIL(ret)) {
         } else if (OB_FAIL(miss_log_entry.deserialize(buf, len, pos))) {
           LOG_ERROR("deserialize miss_log_entry fail", KR(ret), K(len), K(pos));
-        } else if (OB_FAIL(ls_fetch_ctx_->read_miss_tx_log(miss_log_entry, misslog_lsn, tsi, new_generated_miss_info))) {
+        } else if (OB_FAIL(ls_fetch_ctx_->read_miss_tx_log(log_id, miss_log_entry, misslog_lsn, tsi, new_generated_miss_info))) {
           LOG_ERROR("read_miss_log fail", KR(ret), K(miss_log_entry), K(new_generated_miss_info),
               K(misslog_lsn), K(fetched_missing_log_cnt), K(idx));
         } else {

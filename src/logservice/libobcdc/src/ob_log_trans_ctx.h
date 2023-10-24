@@ -336,6 +336,7 @@ private:
 
   int8_t                    state_;
   uint64_t                  tenant_id_;
+  int64_t                   log_id_;
   transaction::ObTransID    trans_id_;
   common::ObString          trans_id_str_;
   common::ObString          major_version_str_;

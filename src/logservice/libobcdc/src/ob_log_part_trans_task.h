@@ -989,6 +989,9 @@ public:
   void set_ref_cnt(const int64_t ref_cnt);
   int64_t get_ref_cnt() const { return ref_cnt_; }
 
+  void set_log_id(const int64_t log_id);
+  int64_t get_log_id() const { return log_id_; }
+
   void set_global_trans_seq(const int64_t seq) { global_trans_seq_ = seq; }
   int64_t get_global_trans_seq() const { return global_trans_seq_; }
 
@@ -1226,6 +1229,7 @@ private:
   const char              *tls_str_;
   transaction::ObTransID  trans_id_;              // trans ID
   ObString                part_trans_info_str_;   // tls_str + tx_id
+  int64_t                 log_id_;                 // log_id
   // whether the transaction has been committed, i.e. whether the commit log has arrived and the whole transaction is complete
   // This variable is only relevant for DML transactions and DDL transactions
   bool                    is_trans_committed_;

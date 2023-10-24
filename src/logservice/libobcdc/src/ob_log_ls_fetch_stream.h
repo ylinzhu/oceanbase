@@ -259,6 +259,7 @@ private:
   // @retval OB_NEED_RETRY                RPC failed, need retry
   // @retval other error code             fail
   int handle_log_miss_(
+      const int64_t &log_id,
       palf::LogEntry &log_entry,
       IObCDCPartTransResolver::MissingLogInfo &org_missing_info,
       TransStatInfo &tsi,
@@ -271,6 +272,7 @@ private:
       ObIArray<obrpc::ObCdcLSFetchMissLogReq::MissLogParam> &batched_misslog_lsn_arr);
   // read batched misslog
   int read_batch_misslog_(
+      const int64_t &log_id,
       const obrpc::ObCdcLSFetchLogResp &resp,
       int64_t &fetched_missing_log_cnt,
       TransStatInfo &tsi,

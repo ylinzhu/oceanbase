@@ -133,6 +133,7 @@ public:
   /// @retval OB_IN_STOP_STATE    Entered stop state
   /// @retval Other error codes   Failed
   int read_log(
+      const int64_t &log_id,
       const palf::LogEntry &log_entry,
       const palf::LSN &lsn,
       IObCDCPartTransResolver::MissingLogInfo &missing,
@@ -150,6 +151,7 @@ public:
   /// @retval Other error codes     fail
   /// @note won't throw OB_ITEM_NOT_SETTED if found missing_log, invoker should check missing_info is_empty or not
   int read_miss_tx_log(
+      const int64_t &log_id,
       const palf::LogEntry &log_entry,
       const palf::LSN &lsn,
       TransStatInfo &tsi,

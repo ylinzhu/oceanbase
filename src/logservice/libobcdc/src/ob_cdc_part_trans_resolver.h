@@ -148,6 +148,7 @@ public:
   /// @retval OB_IN_STOP_STATE    EXIT
   /// @retval other_err_code      unexpected error
   virtual int read(
+      const int64_t &log_id,
       const char *buf,
       const int64_t buf_len,
       const int64_t pos_after_log_header,
@@ -207,6 +208,7 @@ public:
       const int64_t start_commit_version);
 
   virtual int read(
+      const int64_t &log_id,
       const char *buf,
       const int64_t buf_len,
       const int64_t pos_after_log_header,
@@ -241,6 +243,7 @@ private:
   // ******* tx log handler ******** //
   // read trans log from tx_log_block as ObTxxxxLog and resolve the tx log.
   int read_trans_log_(
+      const int64_t &log_id,
       const transaction::ObTxLogBlockHeader &tx_log_block_header,
       transaction::ObTxLogBlock &tx_log_block,
       const transaction::ObTxLogHeader &tx_log_header,
@@ -252,6 +255,7 @@ private:
 
   // read ObTxRedoLog
   int handle_redo_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       const palf::LSN &lsn,
       const int64_t submit_ts,
@@ -259,6 +263,7 @@ private:
       transaction::ObTxLogBlock &tx_log_block);
 
   int handle_multi_data_source_log_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       const palf::LSN &lsn,
       const bool handling_miss_log,
@@ -266,6 +271,7 @@ private:
 
   // read ObTxRecordLog
   int handle_record_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       const palf::LSN &lsn,
       MissingLogInfo &missing_info,
@@ -273,6 +279,7 @@ private:
 
   // handle rollback_to log: push rollback_to info into PartTransTask
   int handle_rollback_to_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       const palf::LSN &lsn,
       const bool is_resolving_miss_log,
@@ -284,6 +291,7 @@ private:
   /// 3. collect misslog info
   /// CommitInfoLog should not reconsume!
   int handle_commit_info_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       const palf::LSN &lsn,
       const int64_t submit_ts,
@@ -294,6 +302,7 @@ private:
   /// handle prepare log.
   /// if hasn't read commit_info log, push prev_lsn(expect prev_tx_log is commit_info log) into missing_info
   int handle_prepare_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       const palf::LSN &prepare_lsn,
       const int64_t prepare_ts,
@@ -320,6 +329,7 @@ private:
   /// @retval OB_ITEM_NOT_SETTED  found
   /// @retval other_err_code      process failed
   int handle_commit_(
+      const int64_t &log_id,
       const int64_t cluster_id,
       const transaction::ObTransID &tx_id,
       const palf::LSN &lsn,
@@ -331,6 +341,7 @@ private:
 
   /// handle abort log
   int handle_abort_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       const bool is_resolving_miss_log,
       transaction::ObTxLogBlock &tx_log_block);
@@ -347,6 +358,7 @@ private:
   /// @retval OB_ENTRY_NOT_EXIST    can't find PartTransTask (unexpected if try_alloc_task = true)
   /// @retval other_err_code        fail
   int obtain_task_(
+      const int64_t &log_id,
       const transaction::ObTransID &tx_id,
       PartTransTask* &part_trans_task,
       const bool is_resolving_miss_log);

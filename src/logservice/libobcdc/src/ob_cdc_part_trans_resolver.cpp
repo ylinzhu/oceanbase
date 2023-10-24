@@ -157,6 +157,7 @@ int ObCDCPartTransResolver::init(
 // read log_entry content
 // iterate TransLog in LogEntry and handle by TransLogType
 int ObCDCPartTransResolver::read(
+    const int64_t &log_id,
     const char *buf,
     const int64_t buf_len,
     const int64_t pos_after_log_header,
@@ -200,6 +201,7 @@ int ObCDCPartTransResolver::read(
         LOG_DEBUG("ignore non_commit_tx_log while reconsuming log_entry contains commit_log",
             K_(tls_id), K(lsn), K(tx_log_block_header), K(tx_header), K(has_redo_in_cur_entry));
       } else if (OB_FAIL(read_trans_log_(
+          log_id,
           tx_log_block_header,
           tx_log_block,
           tx_header,
@@ -271,6 +273,7 @@ int ObCDCPartTransResolver::offline(volatile bool &stop_flag)
 // ***************  ObCDCPartTransResolver private functions ***************** //
 
 int ObCDCPartTransResolver::read_trans_log_(
+    const int64_t &log_id,
     const transaction::ObTxLogBlockHeader &tx_log_block_header,
     transaction::ObTxLogBlock &tx_log_block,
     const transaction::ObTxLogHeader &tx_log_header,
@@ -294,7 +297,7 @@ int ObCDCPartTransResolver::read_trans_log_(
         ret = OB_ERR_UNEXPECTED;
         LOG_ERROR("expected only one redo_log/multi_data_source_log/rollback_to_log in one log_entry",
             KR(ret), K_(tls_id), K(tx_id), K(lsn), K(submit_ts));
-      } else if (OB_FAIL(handle_redo_(tx_id, lsn, submit_ts, handling_miss_log, tx_log_block))) {
+      } else if (OB_FAIL(handle_redo_(log_id, tx_id, lsn, submit_ts, handling_miss_log, tx_log_block))) {
         LOG_ERROR("handle_redo_ fail", KR(ret), K_(tls_id), K(tx_id), K(tx_id), K(lsn), K(tx_log_header),
             K(missing_info));
       } else {
@@ -308,7 +311,7 @@ int ObCDCPartTransResolver::read_trans_log_(
         ret = OB_ERR_UNEXPECTED;
         LOG_ERROR("expected only one redo_log/multi_data_source_log/rollback_to_log in one log_entry",
             KR(ret), K_(tls_id), K(tx_id), K(lsn), K(submit_ts));
-      } else if (OB_FAIL(handle_multi_data_source_log_(tx_id, lsn, handling_miss_log, tx_log_block))) {
+      } else if (OB_FAIL(handle_multi_data_source_log_(log_id, tx_id, lsn, handling_miss_log, tx_log_block))) {
         LOG_ERROR("handle_multi_data_source_log_ failed", KR(ret), K_(tls_id), K(tx_id), K(lsn),
             K(handling_miss_log), K(has_redo_in_cur_entry));
       } else {
@@ -318,7 +321,7 @@ int ObCDCPartTransResolver::read_trans_log_(
     }
     case transaction::ObTxLogType::TX_RECORD_LOG:
     {
-      if (OB_FAIL(handle_record_(tx_id, lsn, missing_info, tx_log_block))) {
+      if (OB_FAIL(handle_record_(log_id, tx_id, lsn, missing_info, tx_log_block))) {
         LOG_ERROR("handle_record_ fail", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(tx_log_header),
             K(missing_info));
       }
@@ -330,7 +333,7 @@ int ObCDCPartTransResolver::read_trans_log_(
         ret = OB_ERR_UNEXPECTED;
         LOG_ERROR("expected only one redo_log/multi_data_source_log/rollback_to_log in one log_entry",
             KR(ret), K_(tls_id), K(tx_id), K(lsn), K(submit_ts));
-      } else if (OB_FAIL(handle_rollback_to_(tx_id, lsn, handling_miss_log, tx_log_block))) {
+      } else if (OB_FAIL(handle_rollback_to_(log_id, tx_id, lsn, handling_miss_log, tx_log_block))) {
         LOG_ERROR("handle_rollback_to_ failed", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(tx_log_header),
             K(handling_miss_log));
       } else {
@@ -342,7 +345,7 @@ int ObCDCPartTransResolver::read_trans_log_(
     }
     case transaction::ObTxLogType::TX_COMMIT_INFO_LOG:
     {
-      if (OB_FAIL(handle_commit_info_(tx_id, lsn, submit_ts, has_redo_in_cur_entry, missing_info, tx_log_block))) {
+      if (OB_FAIL(handle_commit_info_(log_id, tx_id, lsn, submit_ts, has_redo_in_cur_entry, missing_info, tx_log_block))) {
         LOG_ERROR("handle_commit_info_ fail", KR(ret), K_(tls_id), K(tx_id), K(lsn),  K(tx_log_header),
             K(submit_ts), K(has_redo_in_cur_entry), K(missing_info));
       }
@@ -350,7 +353,7 @@ int ObCDCPartTransResolver::read_trans_log_(
     }
     case transaction::ObTxLogType::TX_PREPARE_LOG:
     {
-      if (OB_FAIL(handle_prepare_(tx_id, lsn, submit_ts, missing_info, tx_log_block))) {
+      if (OB_FAIL(handle_prepare_(log_id, tx_id, lsn, submit_ts, missing_info, tx_log_block))) {
         LOG_ERROR("handle_prepare_ fail", KR(ret), K_(tls_id), K(tx_id), K(tx_log_header), K(missing_info));
       }
       break;
@@ -359,6 +362,7 @@ int ObCDCPartTransResolver::read_trans_log_(
     {
       bool is_trans_served = true;
       if (OB_FAIL(handle_commit_(
+          log_id,
           cluster_id,
           tx_id,
           lsn,
@@ -380,7 +384,7 @@ int ObCDCPartTransResolver::read_trans_log_(
     }
     case transaction::ObTxLogType::TX_ABORT_LOG:
     {
-      if (OB_FAIL(handle_abort_(tx_id, handling_miss_log, tx_log_block))) {
+      if (OB_FAIL(handle_abort_(log_id, tx_id, handling_miss_log, tx_log_block))) {
         LOG_ERROR("handle_abort_ fail", KR(ret), K_(tls_id), K(tx_id), K(tx_log_header));
       } else{
         missing_info.reset();
@@ -404,6 +408,7 @@ int ObCDCPartTransResolver::read_trans_log_(
 //   (1) modify order rule: LSN(LogEntryNode)
 //        otherwise sort will cost too much in big_trans case, which contains too much redo node
 int ObCDCPartTransResolver::handle_redo_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     const palf::LSN &lsn,
     const int64_t submit_ts,
@@ -420,7 +425,7 @@ int ObCDCPartTransResolver::handle_redo_(
   } else if (OB_UNLIKELY(redo_log.get_mutator_size() <= 0)) {
     ret = OB_INVALID_DATA;
     LOG_ERROR("invalid mutator size", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(submit_ts), K(redo_log));
-  } else if (OB_FAIL(obtain_task_(tx_id, task, handling_miss_log))) {
+  } else if (OB_FAIL(obtain_task_(log_id, tx_id, task, handling_miss_log))) {
     LOG_ERROR("obtain_task_ fail", KR(ret), K_(tls_id), K(tx_id), K(lsn),
         K(handling_miss_log));
   } else if (OB_FAIL(push_fetched_log_entry_(lsn, *task))) {
@@ -448,6 +453,7 @@ int ObCDCPartTransResolver::handle_redo_(
 }
 
 int ObCDCPartTransResolver::handle_multi_data_source_log_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     const palf::LSN &lsn,
     const bool handling_miss_log,
@@ -460,7 +466,7 @@ int ObCDCPartTransResolver::handle_multi_data_source_log_(
   if (OB_FAIL(tx_log_block.deserialize_log_body(multi_data_source_log))) {
     LOG_ERROR("deserialize multi_data_source_log failed", KR(ret),
         K_(tls_id), K(tx_id), K(lsn), K(multi_data_source_log));
-  } else if (OB_FAIL(obtain_task_(tx_id, task, handling_miss_log))) {
+  } else if (OB_FAIL(obtain_task_(log_id, tx_id, task, handling_miss_log))) {
     LOG_ERROR("obtain_task_ fail", KR(ret), K_(tls_id), K(tx_id), K(multi_data_source_log), K(handling_miss_log));
   } else if (OB_FAIL(push_fetched_log_entry_(lsn, *task))) {
     LOG_ERROR("push_fetched_log_entry into part_trans_task failed", KR(ret), K_(tls_id), K(tx_id), K(lsn),
@@ -478,6 +484,7 @@ int ObCDCPartTransResolver::handle_multi_data_source_log_(
 }
 
 int ObCDCPartTransResolver::handle_record_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     const palf::LSN &lsn,
     MissingLogInfo &missing_info,
@@ -500,7 +507,7 @@ int ObCDCPartTransResolver::handle_record_(
     if (OB_UNLIKELY(prev_redo_lsns.count() <= 0)) {
       ret = OB_ERR_UNEXPECTED;
       LOG_ERROR("prev_redo_lsn_arr should not be empty in record_log", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(record_log), K(prev_redo_lsns));
-    } else if (OB_FAIL(obtain_task_(tx_id, part_trans_task, is_resolving_miss_log))) {
+    } else if (OB_FAIL(obtain_task_(log_id, tx_id, part_trans_task, is_resolving_miss_log))) {
       LOG_ERROR("obtain PartTransTask failed", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(record_log), K(missing_info));
     } else if (OB_FAIL(part_trans_task->push_back_recored_redo_lsn_arr(prev_redo_lsns, lsn, false/*has_redo_in_cur_entry*/))) {
       LOG_ERROR("push_back_recored_redo_lsn_arr failed", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(record_log), K(prev_redo_lsns), KPC(part_trans_task));
@@ -542,6 +549,7 @@ int ObCDCPartTransResolver::handle_record_(
 }
 
 int ObCDCPartTransResolver::handle_rollback_to_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     const palf::LSN &lsn,
     const bool is_resolving_miss_log,
@@ -553,7 +561,7 @@ int ObCDCPartTransResolver::handle_rollback_to_(
 
   if (OB_FAIL(tx_log_block.deserialize_log_body(rollback_to_log))) {
     LOG_ERROR("deserialize_rollback_to_log_body failed", KR(ret), K_(tls_id), K(tx_id), K(lsn));
-  } else if (OB_FAIL(obtain_task_(tx_id, part_trans_task, is_resolving_miss_log))) {
+  } else if (OB_FAIL(obtain_task_(log_id, tx_id, part_trans_task, is_resolving_miss_log))) {
     LOG_ERROR("obtain PartTransTask failed", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(rollback_to_log));
   } else if (OB_FAIL(push_fetched_log_entry_(lsn, *part_trans_task))) {
     LOG_ERROR("push_fetched_log_entry into part_trans_task failed", KR(ret), K_(tls_id), K(tx_id), K(lsn),
@@ -597,6 +605,7 @@ int ObCDCPartTransResolver::handle_rollback_to_(
 // 3.1. start before commit_info: prev_redo_lsn_arr and prev_record_lsn should be empty or invalid. no miss_log will be found.
 // 3.2. start after commit_info: same to above.
 int ObCDCPartTransResolver::handle_commit_info_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     const palf::LSN &lsn,
     const int64_t submit_ts,
@@ -612,7 +621,7 @@ int ObCDCPartTransResolver::handle_commit_info_(
 
   if (OB_FAIL(tx_log_block.deserialize_log_body(commit_info_log))) {
     LOG_ERROR("deserialize_commit_info_log_body failed", KR(ret), K_(tls_id), K(tx_id), K(lsn));
-  } else if (OB_FAIL(obtain_task_(tx_id, part_trans_task, is_resolving_miss_log))) {
+  } else if (OB_FAIL(obtain_task_(log_id, tx_id, part_trans_task, is_resolving_miss_log))) {
     LOG_ERROR("obtain PartTransTask failed", KR(ret), K_(tls_id), K(tx_id), K(lsn), K(submit_ts), K(missing_info));
   } else {
     const common::ObString &trace_id = commit_info_log.get_app_trace_id();
@@ -660,6 +669,7 @@ int ObCDCPartTransResolver::handle_commit_info_(
 // handle_prepare_log_
 // if already read commit_info log, assume all redo_log_entry are fetched
 int ObCDCPartTransResolver::handle_prepare_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     const palf::LSN &prepare_lsn,
     const int64_t prepare_ts,
@@ -674,7 +684,7 @@ int ObCDCPartTransResolver::handle_prepare_(
 
   if (OB_FAIL(tx_log_block.deserialize_log_body(prepare_log))) {
     LOG_ERROR("deserialize_prepare_log_body failed", KR(ret), K_(tls_id), K(tx_id), K(prepare_ts));
-  } else if (OB_FAIL(obtain_task_(tx_id, part_trans_task, is_resolving_miss_log))) {
+  } else if (OB_FAIL(obtain_task_(log_id, tx_id, part_trans_task, is_resolving_miss_log))) {
     LOG_ERROR("obtain PartTransTask failed", KR(ret), K_(tls_id), K(tx_id));
   } else if (OB_FAIL(part_trans_task->prepare(prepare_lsn, prepare_ts, part_trans_dispatcher_))) {
     LOG_ERROR("prepare part_trans_task failed", KR(ret), K_(tls_id), K(tx_id),
@@ -702,6 +712,7 @@ int ObCDCPartTransResolver::handle_prepare_(
 }
 
 int ObCDCPartTransResolver::handle_commit_(
+    const int64_t &log_id,
     const int64_t cluster_id,
     const transaction::ObTransID &tx_id,
     const palf::LSN &lsn,
@@ -740,7 +751,7 @@ int ObCDCPartTransResolver::handle_commit_(
     if (OB_FAIL(part_trans_dispatcher_.remove_task(tls_id_.is_sys_log_stream(), tx_id))) {
       LOG_ERROR("handle unserverd PartTransTask failed", KR(ret), K_(tls_id), K(tx_id));
     }
-  } else if (OB_FAIL(obtain_task_(tx_id, part_trans_task, is_resolving_miss_log))) {
+  } else if (OB_FAIL(obtain_task_(log_id, tx_id, part_trans_task, is_resolving_miss_log))) {
     LOG_ERROR("obtain_part_trans_task fail while reading commit log", KR(ret), K_(tls_id), K(tx_id), K(lsn),
         K(commit_log), K(missing_info));
   } else if (OB_FAIL(part_trans_task->push_multi_data_source_data(lsn, commit_log.get_multi_source_data(), true/*is_commit_log*/))) {
@@ -818,6 +829,7 @@ int ObCDCPartTransResolver::handle_commit_(
 }
 
 int ObCDCPartTransResolver::handle_abort_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     const bool is_resolving_miss_log,
     transaction::ObTxLogBlock &tx_log_block)
@@ -830,7 +842,7 @@ int ObCDCPartTransResolver::handle_abort_(
 
   if (OB_FAIL(tx_log_block.deserialize_log_body(abort_log))) {
     LOG_ERROR("deserialize_abort_log_body failed", KR(ret), K_(tls_id), K(tx_id));
-  } else if (OB_FAIL(obtain_task_(tx_id, part_trans_task, is_resolving_miss_log))) {
+  } else if (OB_FAIL(obtain_task_(log_id, tx_id, part_trans_task, is_resolving_miss_log))) {
     if (OB_ENTRY_NOT_EXIST == ret) {
       ret = OB_SUCCESS;
     } else {
@@ -850,6 +862,7 @@ int ObCDCPartTransResolver::handle_abort_(
 }
 
 int ObCDCPartTransResolver::obtain_task_(
+    const int64_t &log_id,
     const transaction::ObTransID &tx_id,
     PartTransTask *&part_trans_task,
     const bool is_resolving_miss_log)
@@ -864,6 +877,8 @@ int ObCDCPartTransResolver::obtain_task_(
             KR(ret), K(is_resolving_miss_log), K_(tls_id), K(tx_id));
       } else if (OB_FAIL(part_trans_dispatcher_.alloc_task(part_trans_id, part_trans_task))) {
           LOG_ERROR("alloc part_trans_task fail", KR(ret), K_(tls_id), K(tx_id), K(is_resolving_miss_log));
+      } else {
+        part_trans_task->set_log_id(log_id);
       }
     } else {
       LOG_ERROR("get part_trans_task fail", KR(ret), K_(tls_id), K(tx_id), K(is_resolving_miss_log));
