@@ -69,6 +69,9 @@ public:
   int req_start_lsn_by_ts_ns(const obrpc::ObCdcReqStartLSNByTsReq &req_msg,
       obrpc::ObCdcReqStartLSNByTsResp &resp);
 
+  int req_start_lsn_by_log_id(const obrpc::ObCdcReqStartLSNByLogIdReq &req_msg,
+      obrpc::ObCdcReqStartLSNByTsResp &resp);
+
   int fetch_log(const obrpc::ObCdcLSFetchLogReq &req,
       obrpc::ObCdcLSFetchLogResp &resp,
       const int64_t send_ts,

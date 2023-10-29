@@ -110,6 +110,9 @@ public:
   // - others: bug
   int seek(const share::SCN &scn, PalfGroupBufferIterator &iter);
 
+  // actiondb 
+  int seek(const int64_t &log_id, PalfGroupBufferIterator &iter);
+
   // @desc: query coarse lsn by scn, that means there is a LogGroupEntry in disk,
   // its lsn and scn are result_lsn and result_scn, and result_scn <= scn.
   // Note that this function may be time-consuming

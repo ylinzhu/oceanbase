@@ -1440,6 +1440,83 @@ int PalfHandleImpl::locate_by_scn_coarsely(const SCN &scn, LSN &result_lsn)
   return ret;
 }
 
+int PalfHandleImpl::locate_by_log_id_coarsely(const int64_t &log_id, LSN &result_lsn)
+{
+  int ret = OB_SUCCESS;
+  block_id_t mid_block_id = LOG_INVALID_BLOCK_ID, min_block_id = LOG_INVALID_BLOCK_ID;
+  block_id_t max_block_id = LOG_INVALID_BLOCK_ID, result_block_id = LOG_INVALID_BLOCK_ID;
+  int64_t mid_log_id = OB_INVALID_TIMESTAMP;
+  result_lsn.reset();
+  if (IS_NOT_INIT) {
+    ret = OB_NOT_INIT;
+    PALF_LOG(WARN, "PalfHandleImpl not init", KR(ret));
+  } else if (log_id <= 0) {
+    ret = OB_INVALID_ARGUMENT;
+    PALF_LOG(WARN, "invalid argument", KR(ret), KPC(this), K(log_id));
+  } 
+  else if (OB_FAIL(get_binary_search_range_(log_id, min_block_id, max_block_id, result_block_id))) {
+    PALF_LOG(WARN, "get_binary_search_range_ failed", KR(ret), KPC(this), K(log_id));
+  } 
+  else {
+    LogGroupEntryHeader log_group_entry_header;
+    // 1. get lower bound lsn (result_lsn) by binary search
+    while(OB_SUCC(ret) && min_block_id <= max_block_id) {
+      mid_block_id = min_block_id + ((max_block_id - min_block_id) >> 1);
+      if (OB_FAIL(log_engine_.read_group_entry_header(LSN(mid_block_id * PALF_BLOCK_SIZE), log_group_entry_header))) {
+        PALF_LOG(WARN, "get_block_min_ts_ns failed", KR(ret), KPC(this), K(mid_block_id));
+        // OB_ERR_OUT_OF_UPPER_BOUND: this block is a empty active block, just return
+        // OB_ERR_OUT_OF_LOWER_BOUND: block_id_ is smaller than min_block_id, this block may be recycled
+        // OB_ERR_UNEXPECTED: log files lost unexpectedly, just return
+        // OB_IO_ERROR: just return
+        if (OB_ERR_OUT_OF_LOWER_BOUND == ret) {
+          // block mid_lsn.block_id_ may be recycled, get_binary_search_range_ again
+          if (OB_FAIL(get_binary_search_range_(log_id, min_block_id, max_block_id, result_block_id))) {
+            PALF_LOG(WARN, "get_binary_search_range_ failed", KR(ret), KPC(this), K(log_id));
+          }
+        } else if (OB_ERR_OUT_OF_UPPER_BOUND == ret) {
+          ret = OB_ENTRY_NOT_EXIST;
+        }
+      } else if ((mid_log_id = log_group_entry_header.get_log_id()) < log_id) {
+        min_block_id = mid_block_id;
+        if (max_block_id == min_block_id) {
+          result_block_id = mid_block_id;
+          break;
+        } else if (max_block_id == min_block_id + 1) {
+          int64_t next_min_ts = OB_INVALID_TIMESTAMP;
+          if (OB_FAIL(log_engine_.read_group_entry_header(LSN(max_block_id * PALF_BLOCK_SIZE), log_group_entry_header))) {
+            // if fail to read next block, just return prev block lsn
+            ret = OB_SUCCESS;
+            result_block_id = mid_block_id;
+          } else if (log_id < (next_min_ts = log_group_entry_header.get_log_id())) {
+            result_block_id = mid_block_id;
+          } else {
+            result_block_id = max_block_id;
+          }
+          break;
+        }
+      } else if (mid_log_id > log_id) {
+        // block_id is uint64_t, so check == 0 firstly.
+        if (mid_block_id == 0 || mid_block_id - 1 < min_block_id) {
+          ret = OB_ERR_OUT_OF_LOWER_BOUND;
+          PALF_LOG(WARN, "ts_ns is smaller than min ts of first block", KR(ret), KPC(this), K(min_block_id),
+                          K(max_block_id), K(mid_block_id), K(log_id), K(mid_log_id));
+        } else {
+          max_block_id = mid_block_id - 1;
+        }
+      } else {
+        result_block_id = mid_block_id;
+        break;
+      }
+    }
+    // 2. convert block_id to lsn
+    if (OB_SUCC(ret)) {
+      result_lsn = LSN(result_block_id * PALF_BLOCK_SIZE);
+      // inc_update_last_locate_block_ts_(result_block_id, ts_ns);
+    }
+  }
+  return ret;
+}
+
 int PalfHandleImpl::get_block_id_by_scn_(const SCN &scn, block_id_t &result_block_id)
 {
   int ret = OB_SUCCESS;
@@ -1574,6 +1651,46 @@ int PalfHandleImpl::get_binary_search_range_(const SCN &scn,
     }
     PALF_LOG(INFO, "get_binary_search_range_", K(ret), KPC(this), K(min_block_id), K(max_block_id),
         K(result_block_id), K(committed_lsn), K(scn), K_(last_locate_scn), K_(last_locate_block));
+  }
+  return ret;
+}
+
+
+// NB: 1) if min_block_id_ == max_block_id_, then block max_lsn.block_id_ may be active block
+//     2) if min_block_id_ < max_block_id_, then block max_lsn.block_id_ must not be active block
+//     3) if min_block_id_ > max_block_id_, cache hits
+int PalfHandleImpl::get_binary_search_range_(const int64_t &log_id,
+                                             block_id_t &min_block_id,
+                                             block_id_t &max_block_id,
+                                             block_id_t &result_block_id)
+{
+  int ret = OB_SUCCESS;
+  result_block_id = LOG_INVALID_BLOCK_ID;
+  const LSN committed_lsn = get_end_lsn();
+  if (OB_FAIL(log_engine_.get_block_id_range(min_block_id, max_block_id))) {
+    //PALF_LOG(, "get_block_id_range failed", KR(ret), K_(palf_id));
+  } else {
+    block_id_t committed_block_id = lsn_2_block(committed_lsn, PALF_BLOCK_SIZE);
+    max_block_id = (committed_block_id < max_block_id)? committed_block_id : max_block_id;
+    // optimization: cache last_locate_ts_ns_ to shrink binary search range
+    // SpinLockGuard guard(last_locate_lock_);
+    // if (is_valid_block_id(last_locate_block_) &&
+    //     min_block_id <= last_locate_block_ &&
+    //     max_block_id >= last_locate_block_) {
+    //   if (ts_ns < last_locate_ts_ns_) {
+    //     max_block_id = last_locate_block_;
+    //   } else if (ts_ns > last_locate_ts_ns_) {
+    //     min_block_id = last_locate_block_;
+    //   } else {
+    //     result_block_id = last_locate_block_;
+    //     // result_lsn hits last_locate_block_ cache, don't need binary search
+    //     // let min_block_id > max_block_id
+    //     min_block_id = 1;
+    //     max_block_id = 0;
+    //   }
+    // }
+    // PALF_LOG(INFO, "get_log_id_binary_search_range_", K(ret), KPC(this), K(min_block_id), K(max_block_id),
+    //     K(result_block_id), K(committed_lsn), K(log_id), K_(last_locate_ts_ns), K_(last_locate_block));
   }
   return ret;
 }
@@ -1935,6 +2052,64 @@ int PalfHandleImpl::alloc_palf_group_buffer_iterator(const SCN &scn,
         ret = OB_ENTRY_NOT_EXIST;
       }
       PALF_LOG(WARN, "locate_by_scn failed", KR(ret), KPC(this), K(scn), K(result_lsn));
+    }
+  }
+  return ret;
+}
+
+int PalfHandleImpl::alloc_palf_group_buffer_iterator(const int64_t &log_id,
+                                                     PalfGroupBufferIterator &iterator)
+{
+  int ret = OB_SUCCESS;
+  LSN start_lsn;
+  const auto get_file_end_lsn = [&]() {
+    LSN max_flushed_end_lsn;
+    (void)sw_.get_max_flushed_end_lsn(max_flushed_end_lsn);
+    LSN committed_end_lsn;
+    sw_.get_committed_end_lsn(committed_end_lsn);
+    return MIN(committed_end_lsn, max_flushed_end_lsn);
+  };
+  PalfGroupBufferIterator local_iter;
+  if (IS_NOT_INIT) {
+    ret = OB_NOT_INIT;
+    PALF_LOG(WARN, "PalfHandleImpl not init", KR(ret), KPC(this));
+  } 
+  // else if (OB_UNLIKELY(!scn.is_valid())) {
+  //   ret = OB_INVALID_ARGUMENT;
+  //   PALF_LOG(WARN, "invalid argument", KR(ret), K_(palf_id), K(scn));
+  // } 
+  else if (OB_FAIL(locate_by_log_id_coarsely(log_id, start_lsn)) &&
+             OB_ERR_OUT_OF_LOWER_BOUND != ret) {
+    PALF_LOG(WARN, "locate_by_log_id_coarsely failed", KR(ret), KPC(this), K(log_id));
+  } else if (OB_SUCCESS != ret &&
+            !FALSE_IT(start_lsn = log_engine_.get_begin_lsn()) &&
+            start_lsn.val_ != PALF_INITIAL_LSN_VAL) {
+    PALF_LOG(WARN, "log may have been recycled", KR(ret), KPC(this), K(log_id), K(start_lsn));
+  } else if (OB_FAIL(local_iter.init(start_lsn, get_file_end_lsn, log_engine_.get_log_storage()))) {
+    PALF_LOG(WARN, "PalfGroupBufferIterator init failed", KR(ret), KPC(this), K(start_lsn));
+  } else {
+    LogGroupEntry curr_group_entry;
+    LSN curr_lsn, result_lsn;
+    while (OB_SUCC(ret) && OB_SUCC(local_iter.next())) {
+      if (OB_FAIL(local_iter.get_entry(curr_group_entry, curr_lsn))) {
+        PALF_LOG(ERROR, "PalfGroupBufferIterator get_entry failed", KR(ret), KPC(this),
+            K(curr_group_entry), K(curr_lsn), K(local_iter));
+      } else if (curr_group_entry.get_header().get_log_id() >= log_id) {
+        result_lsn = curr_lsn;
+        break;
+      } else {
+        continue;
+      }
+    }
+    if (OB_SUCC(ret) &&
+        result_lsn.is_valid() &&
+        OB_FAIL(iterator.init(result_lsn, get_file_end_lsn, log_engine_.get_log_storage()))) {
+      PALF_LOG(WARN, "PalfGroupBufferIterator init failed", KR(ret), KPC(this), K(result_lsn));
+    } else {
+      if (OB_ITER_END == ret) {
+        ret = OB_ENTRY_NOT_EXIST;
+      }
+      PALF_LOG(WARN, "locate_by_log_id failed", KR(ret), KPC(this), K(log_id), K(result_lsn));
     }
   }
   return ret;

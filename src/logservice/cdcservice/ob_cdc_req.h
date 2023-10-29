@@ -32,6 +32,8 @@ using oceanbase::palf::LogEntry;
 class ObCdcReqStartLSNByTsReq;
 class ObCdcReqStartLSNByTsResp;
 
+class ObCdcReqStartLSNByLogIdReq;
+
 class ObCdcLSFetchLogReq;
 class ObCdcLSFetchLogResp;
 
@@ -86,6 +88,54 @@ public:
 private:
   uint64_t client_pid_;
   ObAddr client_addr_;
+};
+
+class ObCdcReqStartLSNByLogIdReq
+{
+public:
+  static const int64_t CUR_RPC_VER = 1;
+  static const int64_t ITEM_CNT_LMT = 10000; // Around 400kb for cur version.
+
+public:
+  struct LocateParam
+  {
+    ObLSID ls_id_;
+    int64_t log_id_;
+    void reset();
+    void reset(const ObLSID &ls_id, const int64_t log_id_);
+    bool is_valid() const;
+    TO_STRING_KV(K_(ls_id), K_(log_id));
+    OB_UNIS_VERSION(1);
+  };
+  typedef common::ObSEArray<LocateParam, 16> LocateParamArray;
+public:
+  ObCdcReqStartLSNByLogIdReq();
+  ~ObCdcReqStartLSNByLogIdReq();
+public:
+  void reset();
+  bool is_valid() const;
+  int64_t get_rpc_version() const { return rpc_ver_; }
+  void set_rpc_version(const int64_t ver) { rpc_ver_ = ver; }
+
+  int set_params(const LocateParamArray &params);
+  int append_param(const LocateParam &param);
+  const LocateParamArray &get_params() const;
+
+  void set_client_id(ObCdcRpcId &id) { client_id_ = id; }
+  const ObCdcRpcId &get_client_id() const { return client_id_; }
+
+  void set_flag(int8_t flag) { flag_ |= flag; }
+  int8_t get_flag() const { return flag_; }
+
+  TO_STRING_KV(K_(rpc_ver), "param_count", params_.count(), K_(params), K_(client_id), K_(flag));
+  OB_UNIS_VERSION(1);
+private:
+  int64_t rpc_ver_;
+  LocateParamArray params_;
+  ObCdcRpcId client_id_;
+  int8_t flag_;
+private:
+  DISALLOW_COPY_AND_ASSIGN(ObCdcReqStartLSNByLogIdReq);
 };
 
 class ObCdcReqStartLSNByTsReq

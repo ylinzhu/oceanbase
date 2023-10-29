@@ -199,6 +199,28 @@ int ObCdcService::req_start_lsn_by_ts_ns(const obrpc::ObCdcReqStartLSNByTsReq &r
   return ret;
 }
 
+int ObCdcService::req_start_lsn_by_log_id(const obrpc::ObCdcReqStartLSNByLogIdReq &req,
+    obrpc::ObCdcReqStartLSNByTsResp &resp)
+{
+  int ret = OB_SUCCESS;
+
+  if (IS_NOT_INIT) {
+    ret = OB_NOT_INIT;
+    EXTLOG_LOG(WARN, "ObCdcService not init", K(ret));
+  } else if (is_stoped()) {
+    resp.set_err(OB_IN_STOP_STATE);
+    EXTLOG_LOG(INFO, "ObCdcService is stopped", K(req));
+  } else {
+    const int64_t start_ts = ObTimeUtility::current_time();
+    ret = locator_.req_start_lsn_by_log_id(req, resp, stop_flag_);
+    const int64_t end_ts = ObTimeUtility::current_time();
+    ObCdcServiceMonitor::locate_count();
+    ObCdcServiceMonitor::locate_time(end_ts - start_ts);
+  }
+
+  return ret;
+}
+
 int ObCdcService::fetch_log(const obrpc::ObCdcLSFetchLogReq &req,
     obrpc::ObCdcLSFetchLogResp &resp,
     const int64_t send_ts,

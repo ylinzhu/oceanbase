@@ -97,6 +97,13 @@ public:
     return palf_handle_.seek(scn, iter);
   }
 
+  // actiondb 
+  int seek(const int64_t log_id, 
+           PalfGroupBufferIterator &iter)
+  {
+    return palf_handle_.seek(log_id, iter);
+  }
+
   // @breif, query lsn by timestamp, note that this function may be time-consuming
   // @param[in] const int64_t, specified timestamp(ns).
   // @param[out] LSN&, the lower bound lsn which include timestamp.

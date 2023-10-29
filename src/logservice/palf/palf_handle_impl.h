@@ -631,6 +631,8 @@ public:
                                                PalfGroupBufferIterator &iterator) = 0;
   virtual int alloc_palf_group_buffer_iterator(const share::SCN &scn,
                                                PalfGroupBufferIterator &iterator) = 0;
+  virtual int alloc_palf_group_buffer_iterator(const int64_t &log_id, 
+                                               PalfGroupBufferIterator &iterator) = 0;
   // ===================== Iterator end =======================
 
   // ==================== Callback start ======================
@@ -750,6 +752,7 @@ public:
   int advance_base_info(const PalfBaseInfo &palf_base_info, const bool is_rebuild) override final;
   int locate_by_scn_coarsely(const share::SCN &scn, LSN &result_lsn) override final;
   int locate_by_lsn_coarsely(const LSN &lsn, share::SCN &result_scn) override final;
+  int locate_by_log_id_coarsely(const int64_t &log_id, LSN &result_lsn);
   bool is_vote_enabled() const override final;
   int disable_vote(const bool need_check_log_missing) override final;
   int enable_vote() override final;
@@ -771,6 +774,7 @@ public:
   int alloc_palf_buffer_iterator(const LSN &offset, PalfBufferIterator &iterator) override final;
   int alloc_palf_group_buffer_iterator(const LSN &offset, PalfGroupBufferIterator &iterator) override final;
   int alloc_palf_group_buffer_iterator(const share::SCN &scn, PalfGroupBufferIterator &iterator) override final;
+  int alloc_palf_group_buffer_iterator(const int64_t &log_id, PalfGroupBufferIterator &iterator) override final;
   // =========================== Iterator end ============================
 
   // ==================== Callback start ======================
@@ -994,6 +998,10 @@ private:
                                block_id_t &min_block_id,
                                block_id_t &max_block_id,
                                block_id_t &result_block_id);
+  int get_binary_search_range_(const int64_t &log_id,
+                              block_id_t &min_block_id,
+                              block_id_t &max_block_id,
+                              block_id_t &result_block_id);
   int get_block_id_by_scn_(const share::SCN &scn, block_id_t &result_block_id);
   int get_block_id_by_scn_for_flashback_(const share::SCN &scn, block_id_t &result_block_id);
   void inc_update_last_locate_block_scn_(const block_id_t &block_id, const share::SCN &scn);

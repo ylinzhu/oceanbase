@@ -156,6 +156,12 @@ int PalfHandle::seek(const SCN &scn, PalfGroupBufferIterator &iter)
   return palf_handle_impl_->alloc_palf_group_buffer_iterator(scn, iter);
 }
 
+int PalfHandle::seek(const int64_t &log_id, PalfGroupBufferIterator &iter)
+{
+  CHECK_VALID;
+  return palf_handle_impl_->alloc_palf_group_buffer_iterator(log_id, iter);
+}
+
 int PalfHandle::locate_by_scn_coarsely(const SCN &scn, LSN &result_lsn)
 {
   CHECK_VALID;

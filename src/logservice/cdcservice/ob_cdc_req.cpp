@@ -17,6 +17,125 @@ namespace oceanbase
 {
 namespace obrpc
 {
+
+void ObCdcReqStartLSNByLogIdReq::LocateParam::reset()
+{
+  ls_id_.reset();
+  log_id_ = OB_INVALID_TIMESTAMP;
+}
+
+void ObCdcReqStartLSNByLogIdReq::LocateParam::reset(const ObLSID &ls_id, const int64_t log_id)
+{
+  ls_id_ = ls_id;
+  log_id_ = log_id;
+}
+
+bool ObCdcReqStartLSNByLogIdReq::LocateParam::is_valid() const
+{
+  return ls_id_.is_valid() && (log_id_ > 0);
+}
+
+OB_SERIALIZE_MEMBER(ObCdcReqStartLSNByLogIdReq::LocateParam, ls_id_, log_id_);
+
+ObCdcReqStartLSNByLogIdReq::ObCdcReqStartLSNByLogIdReq()
+    : rpc_ver_(CUR_RPC_VER), params_(), client_id_(), flag_(0)
+{ }
+
+ObCdcReqStartLSNByLogIdReq::~ObCdcReqStartLSNByLogIdReq()
+{
+  reset();
+}
+
+void ObCdcReqStartLSNByLogIdReq::reset()
+{
+  params_.reset();
+  flag_ = 0;
+}
+
+bool ObCdcReqStartLSNByLogIdReq::is_valid() const
+{
+  int64_t count = params_.count();
+  bool bool_ret = (count > 0);
+
+  for (int64_t i = 0; bool_ret && i < count; i++) {
+    if (!params_[i].ls_id_.is_valid()
+        || params_[i].log_id_ <= 0) {
+      bool_ret = false;
+    }
+  }
+
+  return bool_ret;
+}
+
+int ObCdcReqStartLSNByLogIdReq::set_params(const LocateParamArray &params)
+{
+  int ret = OB_SUCCESS;
+
+  if (ITEM_CNT_LMT < params.count()) {
+    ret = OB_BUF_NOT_ENOUGH;
+    EXTLOG_LOG(WARN, "err set params, buf not enough", K(ret),
+               LITERAL_K(ITEM_CNT_LMT),
+               "count", params.count());
+  } else if (OB_SUCCESS != (ret = params_.assign(params))) {
+    EXTLOG_LOG(ERROR, "err assign params", K(ret));
+  }
+
+  return ret;
+}
+
+int ObCdcReqStartLSNByLogIdReq::append_param(const LocateParam &param)
+{
+  int ret = OB_SUCCESS;
+
+  if (OB_UNLIKELY(!param.is_valid())) {
+    ret = OB_INVALID_ARGUMENT;
+    EXTLOG_LOG(WARN, "invalid param", K(ret), K(param));
+  } else if (ITEM_CNT_LMT <= params_.count()) {
+    ret = OB_BUF_NOT_ENOUGH;
+    EXTLOG_LOG(WARN, "err append param, buf not enough", K(ret),
+               LITERAL_K(ITEM_CNT_LMT),
+               "count", params_.count());
+  } else if (OB_SUCCESS != (ret = params_.push_back(param))) {
+    EXTLOG_LOG(ERROR, "err push back param", K(ret));
+  }
+
+  return ret;
+}
+
+const ObCdcReqStartLSNByLogIdReq::LocateParamArray &
+ObCdcReqStartLSNByLogIdReq::get_params() const
+{
+  return params_;
+}
+
+OB_DEF_SERIALIZE(ObCdcReqStartLSNByLogIdReq)
+{
+  int ret = OB_SUCCESS;
+  LST_DO_CODE(OB_UNIS_ENCODE, rpc_ver_, params_, client_id_, flag_);
+  return ret;
+}
+
+OB_DEF_SERIALIZE_SIZE(ObCdcReqStartLSNByLogIdReq)
+{
+  int64_t len = 0;
+  LST_DO_CODE(OB_UNIS_ADD_LEN, rpc_ver_, params_, client_id_, flag_);
+  return len;
+}
+
+OB_DEF_DESERIALIZE(ObCdcReqStartLSNByLogIdReq)
+{
+  int ret = OB_SUCCESS;
+  LST_DO_CODE(OB_UNIS_DECODE, rpc_ver_);
+  if (CUR_RPC_VER == rpc_ver_) {
+    LST_DO_CODE(OB_UNIS_DECODE, params_);
+  } else {
+    ret = OB_NOT_SUPPORTED;
+    EXTLOG_LOG(ERROR, "deserialize error, version not match",
+               K(ret), K(rpc_ver_), LITERAL_K(CUR_RPC_VER));
+  }
+  return ret;
+}
+
 /*
  *
  * Request start LSN by start timestamp.

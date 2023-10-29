@@ -27,6 +27,7 @@ using oceanbase::share::ObLSID;
 using oceanbase::palf::LSN;
 
 typedef obrpc::ObCdcReqStartLSNByTsReq ObLocateLSNByTsReq;
+typedef obrpc::ObCdcReqStartLSNByLogIdReq ObLocateLSNByLogIdReq;
 typedef obrpc::ObCdcReqStartLSNByTsResp ObLocateLSNByTsResp;
 
 class ObCdcStartLsnLocator
@@ -40,16 +41,27 @@ public:
   int req_start_lsn_by_ts_ns(const ObLocateLSNByTsReq &req_msg,
       ObLocateLSNByTsResp &result,
       volatile bool &stop_flag);
+  int req_start_lsn_by_log_id(const ObLocateLSNByLogIdReq &req_msg,
+      ObLocateLSNByTsResp &result,
+      volatile bool &stop_flag);
 
 private:
   int do_req_start_lsn_(const ObLocateLSNByTsReq &req,
       ObLocateLSNByTsResp &resp,
       volatile bool &stop_flag);
+  int do_req_start_lsn_by_log_id_(const ObLocateLSNByLogIdReq &req,
+      ObLocateLSNByTsResp &resp,
+      volatile bool &stop_flag);
   inline int64_t get_rpc_deadline_() const { return THIS_WORKER.get_timeout_ts(); }
   int handle_when_hurry_quit_(const ObLocateLSNByTsReq::LocateParam &locate_param,
       ObLocateLSNByTsResp &result);
+  int handle_when_hurry_quit_by_log_id_(const ObLocateLSNByLogIdReq::LocateParam &locate_param,
+      ObLocateLSNByTsResp &result);
   int do_locate_ls_(const bool fetch_archive_only,
       const ObLocateLSNByTsReq::LocateParam &locate_param,
+      ObLocateLSNByTsResp &resp);
+  int do_locate_ls_by_log_id_(const bool fetch_archive_only,
+      const ObLocateLSNByLogIdReq::LocateParam &locate_param,
       ObLocateLSNByTsResp &resp);
 
   // @retval OB_SUCCESS         Success
