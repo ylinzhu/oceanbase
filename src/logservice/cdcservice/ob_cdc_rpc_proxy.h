@@ -24,6 +24,8 @@ namespace obrpc
 class ObCdcReqStartLSNByTsReq;
 class ObCdcReqStartLSNByTsResp;
 
+class ObCdcReqStartLSNByLogIdReq;
+
 class ObCdcLSFetchLogReq;
 class ObCdcLSFetchLogResp;
 
@@ -35,6 +37,9 @@ public:
 
   RPC_S(@PR5 req_start_lsn_by_ts, OB_LOG_REQ_START_LSN_BY_TS,
         (ObCdcReqStartLSNByTsReq), ObCdcReqStartLSNByTsResp);
+
+  RPC_S(@PR5 req_start_lsn_by_log_id, OB_LOG_REQ_START_LSN_BY_LOG_ID,
+       (ObCdcReqStartLSNByLogIdReq), ObCdcReqStartLSNByTsResp);
 
   RPC_AP(@PR5 async_stream_fetch_log, OB_LS_FETCH_LOG2,
          (ObCdcLSFetchLogReq), ObCdcLSFetchLogResp);

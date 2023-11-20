@@ -33,6 +33,16 @@ protected:
   int process();
 };
 
+class ObCdcLSReqStartLSNByLogIdP : public
+  obrpc::ObRpcProcessor<obrpc::ObCdcProxy::ObRpc<obrpc::OB_LOG_REQ_START_LSN_BY_LOG_ID> >
+{
+public:
+  ObCdcLSReqStartLSNByLogIdP() {}
+  ~ObCdcLSReqStartLSNByLogIdP() {}
+protected:
+  int process();
+};
+
 class ObCdcLSFetchLogP : public
   obrpc::ObRpcProcessor<obrpc::ObCdcProxy::ObRpc<obrpc::OB_LS_FETCH_LOG2> >
 {

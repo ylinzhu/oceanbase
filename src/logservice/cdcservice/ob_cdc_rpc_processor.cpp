@@ -59,6 +59,27 @@ int ObCdcLSReqStartLSNByTsP::process()
   return OB_SUCCESS;
 }
 
+int ObCdcLSReqStartLSNByLogIdP::process()
+{
+  int ret = common::OB_SUCCESS;
+  EXTLOG_LOG(INFO, "get into ObCdcLSReqStartLSNByLogIdP", KR(ret));
+  const ObCdcReqStartLSNByLogIdReq &req = arg_;
+  ObCdcReqStartLSNByTsResp &resp = result_;
+  cdc::ObCdcService *cdc_service = nullptr;
+
+  if (OB_FAIL(__get_cdc_service(rpc_pkt_->get_tenant_id(), cdc_service))) {
+    EXTLOG_LOG(ERROR, "__get_cdc_service failed", KR(ret));
+  } else if (OB_ISNULL(cdc_service)) {
+    ret = OB_ERR_UNEXPECTED;
+    EXTLOG_LOG(ERROR, "cdc_service is null", KR(ret));
+  } else {
+    ret = cdc_service->req_start_lsn_by_log_id(req, resp);
+  }
+
+  // rewrite ret for rpc framework
+  return OB_SUCCESS;
+}
+
 int ObCdcLSFetchLogP::process()
 {
   int ret = common::OB_SUCCESS;

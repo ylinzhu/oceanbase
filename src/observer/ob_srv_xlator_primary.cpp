@@ -206,6 +206,7 @@ void oceanbase::observer::init_srv_xlator_for_palfenv(ObSrvRpcXlator *xlator)
 void oceanbase::observer::init_srv_xlator_for_cdc(ObSrvRpcXlator *xlator)
 {
   RPC_PROCESSOR(ObCdcLSReqStartLSNByTsP);
+  RPC_PROCESSOR(ObCdcLSReqStartLSNByLogIdP);
   RPC_PROCESSOR(ObCdcLSFetchLogP);
   RPC_PROCESSOR(ObCdcLSFetchMissingLogP);
 }

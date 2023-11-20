@@ -83,7 +83,7 @@ int ObCdcStartLsnLocator::req_start_lsn_by_ts_ns(const ObLocateLSNByTsReq &req_m
         EXTLOG_LOG(WARN, "do do_req_start_lsn_ failed", K(ret), K(req_msg), K(result));
       }
     } else {
-      EXTLOG_LOG(INFO, "do req_start_log_id success", K(ret), K(req_msg), K(result));
+      EXTLOG_LOG(INFO, "do do_req_start_lsn_ success", K(ret), K(req_msg), K(result));
     }
   }
 
@@ -118,10 +118,10 @@ int ObCdcStartLsnLocator::req_start_lsn_by_log_id(const ObLocateLSNByLogIdReq &r
   } else {
     if (OB_FAIL(do_req_start_lsn_by_log_id_(req_msg, result, stop_flag))) {
       if (OB_IN_STOP_STATE != ret) {
-        EXTLOG_LOG(WARN, "do do_req_start_lsn_ failed", K(ret), K(req_msg), K(result));
+        EXTLOG_LOG(WARN, "do do_req_start_lsn_by_log_id_ failed", K(ret), K(req_msg), K(result));
       }
     } else {
-      EXTLOG_LOG(INFO, "do req_start_log_id success", K(ret), K(req_msg), K(result));
+      EXTLOG_LOG(INFO, "do do_req_start_lsn_by_log_id_ success", K(ret), K(req_msg), K(result));
     }
   }
 

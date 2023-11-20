@@ -109,6 +109,9 @@ void ObSrvRpcXlator::register_rpc_process_function(int pcode, RPCProcessFunc fun
     SERVER_LOG_RET(ERROR, OB_ERROR, "(SHOULD NEVER HAPPEN) duplicate pcode in server rpc xlator", K(pcode));
     ob_abort();
   } else {
+    if (pcode == OB_LOG_REQ_START_LSN_BY_LOG_ID) {
+      LOG_INFO("register_rpc_process_function OB_LOG_REQ_START_LSN_BY_LOG_ID");
+    }
     funcs_[pcode] = func;
   }
 }
@@ -129,6 +132,7 @@ int ObSrvRpcXlator::translate(rpc::ObRequest &req, ObReqProcessor *&processor)
     ret = OB_NOT_SUPPORTED;
     LOG_WARN("not support packet", K(pkt), K(ret), K(MAX_PCODE));
   } else {
+    LOG_INFO("rpc translate", K(pcode));
     ret = funcs_[pcode](gctx_, processor, session_handler_);
   }
 
