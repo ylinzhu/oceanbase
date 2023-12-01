@@ -42,6 +42,13 @@ public:
       obrpc::ObCdcReqStartLSNByTsResp &resp,
       const int64_t timeout) = 0;
 
+  // Reuest start LSN by log_id
+  virtual int req_start_lsn_by_log_id(const uint64_t tenant_id,
+      const common::ObAddr &svr,
+      obrpc::ObCdcReqStartLSNByLogIdReq &req,
+      obrpc::ObCdcReqStartLSNByTsResp &resp,
+      const int64_t timeout) = 0;
+
   // Get logs(GroupLogEntry) based on log stream
   // Asynchronous RPC
   virtual int async_stream_fetch_log(const uint64_t tenant_id,
@@ -80,6 +87,12 @@ public:
   int req_start_lsn_by_tstamp(const uint64_t tenant_id,
       const common::ObAddr &svr,
       obrpc::ObCdcReqStartLSNByTsReq &req,
+      obrpc::ObCdcReqStartLSNByTsResp &resp,
+      const int64_t timeout);
+
+  int req_start_lsn_by_log_id(const uint64_t tenant_id,
+      const common::ObAddr &svr,
+      obrpc::ObCdcReqStartLSNByLogIdReq &req,
       obrpc::ObCdcReqStartLSNByTsResp &resp,
       const int64_t timeout);
 

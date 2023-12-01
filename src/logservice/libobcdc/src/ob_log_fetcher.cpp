@@ -52,7 +52,7 @@ ObLogFetcher::ObLogFetcher() :
     part_trans_resolver_factory_(),
     ls_fetch_mgr_(),
     progress_controller_(),
-    rpc_(),
+    rpc_(NULL),
     log_route_service_(),
     start_lsn_locator_(),
     idle_pool_(),
@@ -86,6 +86,7 @@ int ObLogFetcher::init(
     IObLogEntryTaskPool *log_entry_task_pool,
     ObISQLClient *proxy,
     IObLogErrHandler *err_handler,
+    ObLogRpc *rpc,
     const int64_t cluster_id,
     const ObLogConfig &cfg,
     const int64_t start_seq)
@@ -101,10 +102,11 @@ int ObLogFetcher::init(
       || OB_ISNULL(err_handler_ = err_handler)
       || OB_ISNULL(task_pool_ = task_pool)
       || OB_ISNULL(log_entry_task_pool)
+      || OB_ISNULL(rpc_ = rpc)
       || OB_ISNULL(proxy)) {
     ret = OB_INVALID_ARGUMENT;
     LOG_ERROR("invalid argument", KR(ret), K(dispatcher), K(sys_ls_handler), K(err_handler),
-        K(task_pool), K(log_entry_task_pool), K(proxy));
+        K(task_pool), K(log_entry_task_pool), K(rpc), K(proxy));
   } else {
     // Before the Fetcher module is initialized, the following configuration items need to be loaded
     configure(cfg);
@@ -139,13 +141,11 @@ int ObLogFetcher::init(
             part_trans_resolver_factory_,
             static_cast<void *>(this)))) {
       LOG_ERROR("init part fetch mgr fail", KR(ret));
-    } else if (OB_FAIL(rpc_.init(cfg.io_thread_num))) {
-      LOG_ERROR("init rpc handler fail", KR(ret));
     } else if (OB_FAIL(start_lsn_locator_.init(cfg.start_lsn_locator_thread_num,
             cfg.start_lsn_locator_locate_count,
             fetching_mode,
             archive_dest,
-            rpc_, *err_handler))) {
+            *rpc_, *err_handler))) {
       LOG_ERROR("init start log id locator fail", KR(ret));
     } else if (OB_FAIL(idle_pool_.init(cfg.idle_pool_thread_num,
             *err_handler,
@@ -168,7 +168,7 @@ int ObLogFetcher::init(
             cfg.svr_stream_cached_count,
             cfg.fetch_stream_cached_count,
             cfg.rpc_result_cached_count,
-            rpc_,
+            *rpc_,
             stream_worker_,
             progress_controller_))) {
     } else {
@@ -226,7 +226,9 @@ void ObLogFetcher::destroy()
     idle_pool_.destroy();
     dead_pool_.destroy();
     start_lsn_locator_.destroy();
-    rpc_.destroy();
+    rpc_->destroy();
+    delete rpc_;
+    rpc_ = nullptr;
     progress_controller_.destroy();
     ls_fetch_mgr_.destroy();
     part_trans_resolver_factory_.destroy();

@@ -909,6 +909,9 @@ int ObLogInstance::init_components_(const uint64_t start_tstamp_ns)
     }
   }
 
+  ObLogRpc *rpc;
+  INIT(rpc, ObLogRpc, TCONF.io_thread_num);
+
   const int64_t start_tstamp_usec = start_tstamp_ns / NS_CONVERSION;
   // The initialization of schema depends on the initialization of timezone_info_getter_,
   // and the initialization of timezone_info_getter_ depends on the initialization of tenant_mgr_
@@ -1005,7 +1008,7 @@ int ObLogInstance::init_components_(const uint64_t start_tstamp_ns)
 
   INIT(fetcher_, ObLogFetcher, false/*is_load_data_dict_baseline_data*/, fetching_mode, archive_dest,
       &dispatcher_, sys_ls_handler_, &trans_task_pool_, log_entry_task_pool_,
-      &mysql_proxy_.get_ob_mysql_proxy(), err_handler, cluster_info.cluster_id_, TCONF, start_seq);
+      &mysql_proxy_.get_ob_mysql_proxy(), err_handler, rpc, cluster_info.cluster_id_, TCONF, start_seq);
 
   if (OB_SUCC(ret)) {
     if (is_data_dict_refresh_mode(refresh_mode)) {

@@ -132,6 +132,7 @@ public:
       IObLogEntryTaskPool *log_entry_task_pool,
       ObISQLClient *proxy,
       IObLogErrHandler *err_handler,
+      ObLogRpc *rpc,
       const int64_t cluster_id,
       const ObLogConfig &cfg,
       const int64_t start_seq);
@@ -239,7 +240,7 @@ private:
   PartProgressController        progress_controller_;           // Process Controller
 
   // Function Modules
-  ObLogRpc                      rpc_;
+  ObLogRpc                      *rpc_;
   logservice::ObLogRouteService log_route_service_;
   ObLogStartLSNLocator          start_lsn_locator_;
   ObLogFetcherIdlePool          idle_pool_;

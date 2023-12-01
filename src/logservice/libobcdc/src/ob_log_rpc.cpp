@@ -101,6 +101,22 @@ int ObLogRpc::req_start_lsn_by_tstamp(const uint64_t tenant_id,
   return ret;
 }
 
+
+int ObLogRpc::req_start_lsn_by_log_id(const uint64_t tenant_id,
+    const common::ObAddr &svr,
+    obrpc::ObCdcReqStartLSNByLogIdReq &req,
+    obrpc::ObCdcReqStartLSNByTsResp &resp,
+    const int64_t timeout)
+{
+  int ret = OB_SUCCESS;
+  if (1 == TCONF.test_mode_force_fetch_archive) {
+    req.set_flag(ObCdcRpcTestFlag::OBCDC_RPC_FETCH_ARCHIVE);
+  }
+  SEND_RPC(req_start_lsn_by_log_id, tenant_id, svr, timeout, req, resp);
+  LOG_INFO("rpc: request start LSN by log id", KR(ret), K(tenant_id), K(svr), K(timeout), K(req), K(resp));
+  return ret;
+}
+
 int ObLogRpc::async_stream_fetch_log(const uint64_t tenant_id,
     const common::ObAddr &svr,
     obrpc::ObCdcLSFetchLogReq &req,

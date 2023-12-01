@@ -92,9 +92,14 @@ int ObLogMetaDataFetcher::init(
   } else if (OB_FAIL(log_entry_task_pool_.init(LOG_ENTRY_TASK_COUNT))) {
     LOG_ERROR("log_entry_task_pool_ init failed", KR(ret));
   } else {
+    ObLogRpc *rpc;
+    INIT(rpc, ObLogRpc, cfg.io_thread_num);
+    if (OB_SUCC(ret)) {
+      LOG_ERROR("rpc init failed", KR(ret));
+    }
     INIT(log_fetcher_, ObLogFetcher, true/*is_loading_data_dict_baseline_data*/,
         fetching_mode, archive_dest, fetcher_dispatcher,
-        sys_ls_handler, &trans_task_pool_, &log_entry_task_pool_, proxy, err_handler,
+        sys_ls_handler, &trans_task_pool_, &log_entry_task_pool_, proxy, err_handler, rpc,
         cluster_id, cfg, start_seq);
 
     is_inited_ = true;
