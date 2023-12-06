@@ -911,8 +911,42 @@ int ObLogInstance::init_components_(const uint64_t start_tstamp_ns)
 
   ObLogRpc *rpc;
   INIT(rpc, ObLogRpc, TCONF.io_thread_num);
+  int64_t start_tstamp_usec = start_tstamp_ns / NS_CONVERSION;
+  if (OB_SUCC(ret) && TCONF.enable_locate_by_log_id) {
+    LOG_INFO("locate lsn by log id", K(start_tstamp_ns));
+    ObCdcReqStartLSNByTsResp rpc_res;
+    ObCdcReqStartLSNByLogIdReq rpc_req;
+    ObCdcReqStartLSNByLogIdReq::LocateParam locate_param;
+    // 在开启 enable_locate_by_log_id后，start_tstamp_ns 表示 log_id
+    // todo 1001 hard code
+    locate_param.reset(ObLSID(1001), start_tstamp_ns);
+    // Requires append operation to be successful
+    if (OB_FAIL(rpc_req.append_param(locate_param))) {
+      LOG_ERROR("append param fail", KR(ret), K(rpc_req), K(locate_param));
+    } else {
+      int rpc_err = OB_SUCCESS;
+      int svr_err = OB_SUCCESS;
+      common::ObAddr srv;
+      rs_server_provider_->get_server(0, srv);
+      // todo get rpc port by sql port - 1
+      srv.set_port(srv.get_port() - 1);
+      // todo 
+      rpc_err = rpc->req_start_lsn_by_log_id(TCONF.binlog_tenant_id, srv, rpc_req, rpc_res, 60000000);
+      // send rpc fail
+      if (OB_SUCCESS != rpc_err) {
+        LOG_ERROR("rpc request start lsn by log_id fail, rpc error",
+            K(rpc_err), "svr", srv, K(rpc_req), K(rpc_res));
+      }
+      // observer handle fail
+      else if (OB_SUCCESS != (svr_err = rpc_res.get_err())) {
+        LOG_ERROR("rpc request start lsn by log_id fail, server error",
+            K(svr_err), "svr", srv, K(rpc_req), K(rpc_res));
+      }
+      const ObCdcReqStartLSNByTsResp::LocateResult &result = rpc_res.get_results().at(0);
+      start_tstamp_usec = result.start_ts_ns_ / NS_CONVERSION;
+    }
+  }
 
-  const int64_t start_tstamp_usec = start_tstamp_ns / NS_CONVERSION;
   // The initialization of schema depends on the initialization of timezone_info_getter_,
   // and the initialization of timezone_info_getter_ depends on the initialization of tenant_mgr_
   if (OB_SUCC(ret)) {

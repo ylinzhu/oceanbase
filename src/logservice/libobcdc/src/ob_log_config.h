@@ -124,6 +124,8 @@ public:
   DEF_INT(storager_mem_percentage, OB_CLUSTER_PARAMETER, "2", "[1,]",
       "storager memory percentage");
   T_DEF_BOOL(skip_recycle_data, OB_CLUSTER_PARAMETER, 0, "0:not_skip, 1:skip")
+  T_DEF_BOOL(enable_locate_by_log_id, OB_CLUSTER_PARAMETER, 0, "0:disabled, 1:enabled")
+  DEF_INT(binlog_tenant_id, OB_CLUSTER_PARAMETER, "1", "[1,]", "0:disabled, 1:enabled")
   DEF_INT(part_trans_task_reusable_count_upper_bound, OB_CLUSTER_PARAMETER, "10240", "[1,]",
       "reusable parti trans task count upper bound");
   DEF_INT(ready_to_seq_task_upper_bound, OB_CLUSTER_PARAMETER, "20000", "[1,]",
