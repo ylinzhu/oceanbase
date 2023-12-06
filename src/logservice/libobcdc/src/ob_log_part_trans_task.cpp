@@ -1575,7 +1575,7 @@ int DdlStmtTask::init_ddl_unique_id_(common::ObString &ddl_unique_id)
       LOG_ERROR("allocate memory for trans id buffer fail", K(buf));
       ret = OB_ALLOCATE_MEMORY_FAILED;
     } else if (OB_FAIL(databuff_printf(buf, buf_len, pos,
-            "%s", to_cstring(ddl_stmt_unique_id)))) {
+            "%s_%ld", to_cstring(ddl_stmt_unique_id, host_.get_log_id())))) {
       LOG_ERROR("init_ddl_unique_id_ fail", KR(ret), K(buf), K(buf_len), K(pos),
           K(ddl_stmt_unique_id));
     } else {
