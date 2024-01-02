@@ -81,7 +81,7 @@ install(
 if (NOT OB_SO_CACHE AND OB_BUILD_CDC)
 include(GNUInstallDirs)
 install(
-  TARGETS obcdc obcdc_tailf
+  TARGETS obcdc
   COMPONENT cdc
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -358,7 +358,7 @@ include(CPack)
 add_custom_target(rpm
   COMMAND +make package
   DEPENDS
-  observer obcdc_tailf obtable obtable_static
+  observer obtable obtable_static
   ob_admin ob_error ob_sql_proxy_parser_static
   ${BITCODE_TO_ELF_LIST}
   )
