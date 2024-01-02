@@ -177,6 +177,7 @@ void ObCompatModeGetter::destroy()
 {
   if (IS_INIT) {
     id_mode_map_.destroy();
+    is_inited_ = false;
   }
 }
 
