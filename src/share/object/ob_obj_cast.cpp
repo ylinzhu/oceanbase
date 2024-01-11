@@ -12731,7 +12731,7 @@ int ObObjCaster::enumset_to_inner(const ObObjMeta &expect_meta,
           const ObString &tmp_val = str_values.at(i);
           if (OB_FAIL(sql_string.append(tmp_val))) {
             LOG_WARN("fail to deep copy str", K(element_val), K(i), K(ret));
-          } else if ((element_val >= (index << 1)) && (OB_FAIL(sql_string.append(sep)))) {
+          } else if (i < 63 && (element_val >= (index << 1)) && (OB_FAIL(sql_string.append(sep)))) { // The 64th set value is not followed by a comma.
             LOG_WARN("fail to deep copy comma", K(element_val), K(tmp_val), K(i), K(ret));
           }
         }
