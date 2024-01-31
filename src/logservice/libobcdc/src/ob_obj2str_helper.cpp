@@ -105,6 +105,7 @@ void ObObj2strHelper::destroy()
   enable_convert_timestamp_to_unix_timestamp_ = false;
   enable_backup_mode_ = false;
   tenant_mgr_ = NULL;
+  sql::ARITH_RESULT_TYPE_ORACLE.destroy();
 }
 
 

@@ -888,6 +888,8 @@ public:
       common::ObIArray<const ObTableSchema *> &table_schemas);
 
 protected:
+  virtual int destroy();
+
   bool check_inner_stat() const;
   int check_stop() const;
   virtual int fallback_schema_mgr(const ObRefreshSchemaStatus &schema_status,
@@ -912,8 +914,6 @@ protected:
       const uint64_t tenant_id,
       ObTableSchema &table_schema);
 private:
-  virtual int destroy();
-
   // stats table instances in schem mgrs
   class ObTable
   {

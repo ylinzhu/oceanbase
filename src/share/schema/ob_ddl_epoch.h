@@ -44,6 +44,9 @@ class ObDDLEpochMgr
 {
 public:
   ObDDLEpochMgr() : inited_(false), sql_proxy_(NULL), schema_service_(NULL) {}
+
+  virtual int destroy();
+
   int init(ObMySQLProxy *sql_proxy, share::schema::ObMultiVersionSchemaService *schema_service);
   // 获取本地ddl_epoch
   int get_ddl_epoch(uint64_t tenant_id, int64_t &ddl_epoch);

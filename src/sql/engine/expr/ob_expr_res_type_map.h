@@ -245,10 +245,13 @@ public:
 
 
   ObArithResultTypeMap()
-  {}
+  {
+  }
 
   ~ObArithResultTypeMap()
-  {}
+  {
+    destroy();
+  }
 
   int init()
   {
@@ -267,12 +270,26 @@ public:
       ret = types_set_[type_idx].add_member(type_idx);
       OB_LOG(DEBUG, "type bitset", K(ret), K(type_idx), K(types_set_[type_idx]));
     }
+    if (is_inited_) {
+      return ret;
+    }
     if (OB_SUCC(ret)) {
+      OB_LOG(INFO, "prepare define_rules");
       ret = define_rules();
     }
+    is_inited_ = true;
     return ret;
   }
 
+  void destroy() {
+    int ret = common::OB_SUCCESS;
+    for (int64_t tc_idx = 0; OB_SUCC(ret) && tc_idx < TC_COUNT; ++tc_idx) {
+      types_in_tc_set_[tc_idx].reset();
+    }
+    for (int64_t type_idx = 0; OB_SUCC(ret) && type_idx < TYPE_COUNT; ++type_idx) {
+      types_set_[type_idx].reset();
+    }
+  }
   virtual int define_rules();
 
   inline int init_type_set_by_func(TypeBitset &type_set, is_type_func func2)
@@ -335,6 +352,7 @@ private:
   TypeBitset types_set_[TYPE_COUNT]; //把objtype转换成bitset表示
   TypeBitset func1_set_;
   TypeBitset func2_set_;
+  bool is_inited_;
 };
 
 extern ObArithResultTypeMap ARITH_RESULT_TYPE_ORACLE;

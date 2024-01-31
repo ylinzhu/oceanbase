@@ -390,10 +390,24 @@ ObSchemaCache::ObSchemaCache()
 
 ObSchemaCache::~ObSchemaCache()
 {
+  destory();
+}
+
+void ObSchemaCache::destory()
+{
+  cache_.destroy();
+  tablet_cache_.destroy();
+  sys_cache_.destroy();
+
+  all_core_table_.reset();
+  simple_gts_tenant_.reset();
+  full_gts_tenant_.reset();
+
   if (mem_context_ != nullptr) {
     DESTROY_CONTEXT(mem_context_);
     mem_context_ = nullptr;
   }
+  is_inited_ = false;
 }
 
 int ObSchemaCache::init_all_core_table()
