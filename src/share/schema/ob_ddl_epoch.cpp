@@ -39,6 +39,15 @@ int ObDDLEpochMgr::init(ObMySQLProxy *sql_proxy, share::schema::ObMultiVersionSc
   return ret;
 }
 
+int ObDDLEpochMgr::destroy()
+{
+  int ret = OB_SUCCESS;
+  sql_proxy_ = NULL;
+  schema_service_ = NULL;
+  inited_ = false;
+  return ret;
+}
+
 int ObDDLEpochMgr::get_ddl_epoch(const uint64_t tenant_id, int64_t &ddl_epoch)
 {
   int ret = OB_SUCCESS;

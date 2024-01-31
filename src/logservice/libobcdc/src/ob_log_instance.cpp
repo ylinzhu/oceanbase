@@ -1304,6 +1304,8 @@ void ObLogInstance::destroy()
     timezone_info_getter_ = nullptr;
     ObKVGlobalCache::get_instance().destroy();
     ObMemoryDump::get_instance().destroy();
+    ObCompatModeGetter::instance().destroy();
+    ObClusterVersion::get_instance().destroy();
     ObClockGenerator::destroy();
 
     is_assign_log_dir_valid_ = false;

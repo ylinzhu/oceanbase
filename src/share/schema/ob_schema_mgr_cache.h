@@ -135,6 +135,7 @@ public:
 public:
   ObSchemaMgrCache();
   virtual ~ObSchemaMgrCache();
+  virtual int destroy(); 
   int init(int64_t init_cached_num, Mode mode);
   int check_schema_mgr_exist(const int64_t schema_version, bool &is_exist);
   int get(const int64_t schema_version,

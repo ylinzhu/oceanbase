@@ -1652,7 +1652,17 @@ ObMultiVersionSchemaService::~ObMultiVersionSchemaService()
 int ObMultiVersionSchemaService::destroy()
 {
   int ret = OB_SUCCESS;
+  schema_cache_.destory();
+  schema_mgr_cache_.destroy();
+  schema_mgr_cache_for_liboblog_.destroy();
+
   schema_store_map_.destroy();
+  ObServerSchemaService::destroy();
+
+  ddl_trans_controller_.stop();
+  ddl_trans_controller_.destroy();
+  ddl_epoch_mgr_.destroy();
+  init_ = false;
   return ret;
 }
 

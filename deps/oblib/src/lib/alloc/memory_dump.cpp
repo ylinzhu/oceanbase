@@ -163,7 +163,18 @@ void ObMemoryDump::destroy()
   if (is_inited_) {
     TG_STOP(TGDefIDs::MEMORY_DUMP);
     TG_WAIT(TGDefIDs::MEMORY_DUMP);
+    print_buf_ = NULL;
+    array_ = nullptr;
+    log_buf_ = nullptr;
     queue_.destroy();
+    lmap_.destroy();
+    r_stat_->malloc_sample_map_.destroy();
+    r_stat_ = NULL;
+    w_stat_->malloc_sample_map_.destroy();
+    w_stat_ = NULL;
+    if (dump_context_ != nullptr) {
+      DESTROY_CONTEXT(dump_context_);
+    }
     is_inited_ = false;
   }
 }

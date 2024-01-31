@@ -122,6 +122,10 @@ public:
 public:
   static ObMultiVersionSchemaService &get_instance();
 
+  ObMultiVersionSchemaService();
+  virtual ~ObMultiVersionSchemaService();
+  virtual int destroy();
+
   int init(common::ObMySQLProxy *proxy,
       common::ObDbLinkProxy *dblink_proxy,
       const common::ObCommonConfig *config,
@@ -352,10 +356,6 @@ friend class tools::ObAgentTaskWorker;
 friend class ObDDLEpochMgr;
 
 protected:
-  ObMultiVersionSchemaService();
-  virtual ~ObMultiVersionSchemaService();
-  virtual int destroy();
-
   virtual int publish_schema(const uint64_t tenant_id) override;
   virtual int init_multi_version_schema_struct(const uint64_t tenant_id) override;
   virtual int update_schema_cache(common::ObIArray<ObTableSchema*> &schema_array) override;

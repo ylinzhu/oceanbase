@@ -80,6 +80,7 @@ int ObServerSchemaService::destroy()
         it->second = NULL;
       }
     }
+    schema_mgr_for_cache_map_.destroy();
   }
   if (OB_SUCC(ret)) {
     FOREACH(it, mem_mgr_map_) {
@@ -91,6 +92,7 @@ int ObServerSchemaService::destroy()
         it->second = NULL;
       }
     }
+    mem_mgr_map_.destroy();
   }
   if (OB_SUCC(ret)) {
     FOREACH(it, mem_mgr_for_liboblog_map_) {
@@ -102,7 +104,10 @@ int ObServerSchemaService::destroy()
         it->second = NULL;
       }
     }
+    mem_mgr_for_liboblog_map_.destroy();
   }
+  refresh_full_schema_map_.destroy();
+  version_his_map_.destroy();
   return ret;
 }
 

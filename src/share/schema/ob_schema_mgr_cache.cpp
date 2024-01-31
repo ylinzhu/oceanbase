@@ -137,6 +137,17 @@ ObSchemaMgrCache::ObSchemaMgrCache()
 ObSchemaMgrCache::~ObSchemaMgrCache()
 {
   // TODO: release
+  destroy();
+}
+
+int ObSchemaMgrCache::destroy()
+{
+  int ret = OB_SUCCESS;
+  last_get_schema_idx_ = 0;
+  cur_cached_num_ = 0;
+  mode_ = REFRESH;
+  latest_schema_idx_ = 0;
+  return ret;
 }
 
 int ObSchemaMgrCache::init(int64_t init_cached_num, Mode mode)

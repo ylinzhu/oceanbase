@@ -485,6 +485,7 @@ int ObLogSchemaGetter::init(common::ObMySQLProxy &mysql_proxy,
 
 void ObLogSchemaGetter::destroy()
 {
+  schema_service_.destroy();
   inited_ = false;
 }
 
