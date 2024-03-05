@@ -685,7 +685,7 @@ int ObLogInstance::init_schema_(const int64_t start_tstamp_us, int64_t &sys_star
   return ret;
 }
 
-int ObLogInstance::init_components_(const uint64_t start_tstamp_ns)
+int ObLogInstance::init_components_(uint64_t start_tstamp_ns)
 {
   int ret = OB_SUCCESS;
   IObLogErrHandler *err_handler = this;
@@ -919,7 +919,7 @@ int ObLogInstance::init_components_(const uint64_t start_tstamp_ns)
     ObCdcReqStartLSNByLogIdReq::LocateParam locate_param;
     // 在开启 enable_locate_by_log_id后，start_tstamp_ns 表示 log_id
     // todo 1001 hard code
-    locate_param.reset(ObLSID(1001), start_tstamp_ns);
+    locate_param.reset(ObLSID(1001), start_tstamp_usec);
     // Requires append operation to be successful
     if (OB_FAIL(rpc_req.append_param(locate_param))) {
       LOG_ERROR("append param fail", KR(ret), K(rpc_req), K(locate_param));
@@ -928,8 +928,8 @@ int ObLogInstance::init_components_(const uint64_t start_tstamp_ns)
       int svr_err = OB_SUCCESS;
       common::ObAddr srv;
       rs_server_provider_->get_server(0, srv);
-      // todo get rpc port by sql port - 1
-      srv.set_port(srv.get_port() - 1);
+      // todo get rpc port by sql port + 1
+      srv.set_port(srv.get_port() + 1);
       // todo 
       rpc_err = rpc->req_start_lsn_by_log_id(TCONF.binlog_tenant_id, srv, rpc_req, rpc_res, 60000000);
       // send rpc fail
@@ -944,6 +944,8 @@ int ObLogInstance::init_components_(const uint64_t start_tstamp_ns)
       }
       const ObCdcReqStartLSNByTsResp::LocateResult &result = rpc_res.get_results().at(0);
       start_tstamp_usec = result.start_ts_ns_ / NS_CONVERSION;
+      start_tstamp_ns_ = result.start_ts_ns_;
+      start_tstamp_ns = result.start_ts_ns_;
     }
   }
 
