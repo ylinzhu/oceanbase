@@ -2094,7 +2094,7 @@ int PalfHandleImpl::alloc_palf_group_buffer_iterator(const int64_t &log_id,
       if (OB_FAIL(local_iter.get_entry(curr_group_entry, curr_lsn))) {
         PALF_LOG(ERROR, "PalfGroupBufferIterator get_entry failed", KR(ret), KPC(this),
             K(curr_group_entry), K(curr_lsn), K(local_iter));
-      } else if (curr_group_entry.get_header().get_log_id() >= log_id) {
+      } else if (curr_group_entry.get_header().get_log_id() > log_id) {
         result_lsn = curr_lsn;
         break;
       } else {
