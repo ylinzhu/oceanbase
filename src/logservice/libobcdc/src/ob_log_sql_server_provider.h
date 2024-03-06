@@ -65,6 +65,7 @@ public:
   int init(const char *config_url, const char *rs_list);
   void destroy();
   void configure(const ObLogConfig &cfg);
+  int get_root_server(const int64_t svr_idx, share::ObRootAddr &server);
 
 private:
   // str_len of rs_list should be greater than 1(default valud is ';') and less than MAX_CONFIG_LENGTH
