@@ -393,6 +393,36 @@ int ObLogSQLServerProvider::get_server(
   return ret;
 }
 
+int ObLogSQLServerProvider::get_root_server(
+    const int64_t svr_idx,
+    share::ObRootAddr &server)
+{
+  int ret = OB_SUCCESS;
+  if (! inited_) {
+    ret = OB_NOT_INIT;
+  } else if (svr_idx < 0) {
+    ret = OB_INVALID_ARGUMENT;
+  } else {
+    // add read lock
+    SpinRLockGuard guard(refresh_lock_);
+    ObRootAddr addr;
+
+    if (svr_idx >= server_list_.count()) {
+      // out of svr count, need retry
+      ret = OB_ENTRY_NOT_EXIST;
+    } else if (OB_FAIL(server_list_.at(svr_idx, addr))) {
+      LOG_ERROR("get server from server list fail", KR(ret), K(svr_idx));
+    } else {
+      server = addr;
+    }
+
+    _LOG_DEBUG("[SQL_SERVER_PROVIDER] get_root_server(%ld/%ld)=>%s ret=%d",
+        svr_idx, server_list_.count(), to_cstring(server), ret);
+  }
+
+  return ret;
+}
+
 int64_t ObLogSQLServerProvider::get_server_count() const
 {
   SpinRLockGuard guard(refresh_lock_);

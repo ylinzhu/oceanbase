@@ -927,9 +927,10 @@ int ObLogInstance::init_components_(uint64_t start_tstamp_ns)
       int rpc_err = OB_SUCCESS;
       int svr_err = OB_SUCCESS;
       common::ObAddr srv;
-      rs_server_provider_->get_server(0, srv);
-      // todo get rpc port by sql port + 1
-      srv.set_port(srv.get_port() + 1);
+      share::ObRootAddr addr;
+      ObLogSQLServerProvider *oblog_rs_server_provider = static_cast<ObLogSQLServerProvider *>(rs_server_provider_);
+      oblog_rs_server_provider->get_root_server(0, addr);
+      srv = addr.get_server();
       // todo 
       rpc_err = rpc->req_start_lsn_by_log_id(TCONF.binlog_tenant_id, srv, rpc_req, rpc_res, 60000000);
       // send rpc fail
