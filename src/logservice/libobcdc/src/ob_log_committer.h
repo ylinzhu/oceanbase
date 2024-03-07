@@ -144,7 +144,7 @@ private:
   int handle_task_(PartTransTask *task);
   int handle_dml_task_(PartTransTask *task);
   int handle_ddl_task_(PartTransTask *ddl_task);
-  int handle_ddl_stmt_(DdlStmtTask &stmt_task);
+  int handle_ddl_stmt_(int64_t log_id, DdlStmtTask &stmt_task);
   int revert_binlog_record_(ObLogBR *br);
   int do_trans_stat_(const TenantLSID &pkey, const int64_t total_stmt_cnt);
   int commit_binlog_record_list_(TransCtx &trans_ctx,

@@ -910,7 +910,7 @@ int ObLogCommitter::handle_ddl_task_(PartTransTask *ddl_task)
       // Iterate through each statement of the DDL
       DdlStmtTask *stmt_task = static_cast<DdlStmtTask *>(ddl_task->get_stmt_list().head_);
       while (NULL != stmt_task && OB_SUCCESS == ret) {
-        if (OB_FAIL(handle_ddl_stmt_(*stmt_task))) {
+        if (OB_FAIL(handle_ddl_stmt_(trans_ctx->get_log_id(), *stmt_task))) {
           if (OB_IN_STOP_STATE != ret) {
             LOG_ERROR("handle_ddl_stmt_ fail", KR(ret), KPC(stmt_task));
           }
@@ -939,7 +939,7 @@ int ObLogCommitter::handle_ddl_task_(PartTransTask *ddl_task)
   return ret;
 }
 
-int ObLogCommitter::handle_ddl_stmt_(DdlStmtTask &stmt_task)
+int ObLogCommitter::handle_ddl_stmt_(int64_t log_id, DdlStmtTask &stmt_task)
 {
   int ret = OB_SUCCESS;
   ObLogBR *br = stmt_task.get_binlog_record();
@@ -960,6 +960,8 @@ int ObLogCommitter::handle_ddl_stmt_(DdlStmtTask &stmt_task)
   } else {
     // If the binlog record is valid, output
     // DDL push to the next element in the BRQueue, the next element in the chain is empty
+    std::string log_id_str = std::to_string(log_id);
+    br->get_data()->putFilterRuleVal(log_id_str.c_str(), log_id_str.length());
     br->set_next(NULL);
 
     if (OB_FAIL(push_br_queue_(br))) {

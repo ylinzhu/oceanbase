@@ -208,6 +208,7 @@ public:
   bool is_sequenced() const { return TRANS_CTX_STATE_SEQUENCED == state_; }
   bool is_data_ready() const { return TRANS_CTX_STATE_DATA_READY == state_; }
   uint64_t get_tenant_id() const { return tenant_id_; }
+  int64_t get_log_id() const { return log_id_; }
   const transaction::ObTransID &get_trans_id() const { return trans_id_; }
   const common::ObString &get_trans_id_str() const { return trans_id_str_; }
   const common::ObString &get_major_version_str() const { return major_version_str_; }
