@@ -494,6 +494,24 @@ int TransCtx::add_ready_participant_(
       if (part_trans_task.get_tls_id() == participants_[index].tls_id_) {
         existed = true;
         participants_[index].obj_ = &part_trans_task;
+         //todo hard code
+        if (1 == part_trans_task.get_ls_id().id()){
+          for (int64_t index = 0; index < participant_count_; index++) {
+            if (OB_ISNULL(participants_[index].obj_)) {
+            } else if (1001 == participants_[index].obj_->get_ls_id().id()) {
+              log_id_ = participants_[index].obj_->get_log_id();
+              break;
+            }
+          }
+        } else if (1001 == part_trans_task.get_ls_id().id()) {
+          for (int64_t index = 0; index < participant_count_; index++) {
+            if (OB_ISNULL(participants_[index].obj_)) {
+            } else if (1 == participants_[index].obj_->get_ls_id().id()) {
+              log_id_ = part_trans_task.get_log_id();
+              break;
+            }
+          }
+        }
       }
     }
 
