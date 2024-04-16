@@ -60,7 +60,7 @@ int ObLSTxLogAdapter::submit_log(const char *buf,
     ObTransStatistic::get_instance().add_clog_submit_count(MTL_ID(), 1);
     ObTransStatistic::get_instance().add_trans_log_total_size(MTL_ID(), size);
   }
-  TRANS_LOG(DEBUG, "ObLSTxLogAdapter::submit_ls_log", KR(ret), KP(cb));
+  TRANS_LOG(WARN, "ObLSTxLogAdapter::submit_ls_log", KR(ret), K(lsn),K(lsn),K(cb));
 
   return ret;
 }

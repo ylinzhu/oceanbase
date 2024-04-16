@@ -607,6 +607,7 @@ ObDDLRedoLogWriter &ObDDLRedoLogWriter::get_instance()
 int ObDDLRedoLogWriter::init()
 {
   int ret = OB_SUCCESS;
+  LOG_WARN("init ObDDLRedoLogWriter", K(ret));
   const int64_t bucket_num = 10243L;
   if (is_inited_) {
   } else if (OB_FAIL(bucket_lock_.init(bucket_num))) {
@@ -630,6 +631,7 @@ int ObDDLRedoLogWriter::write(
   ObDDLRedoLogHandle &handle)
 {
   int ret = OB_SUCCESS;
+  LOG_WARN("write ObDDLRedoLogWriter", K(ret));
   const enum ObReplayBarrierType replay_barrier_type = ObReplayBarrierType::NO_NEED_BARRIER;
   logservice::ObLogBaseHeader base_header(logservice::ObLogBaseType::DDL_LOG_BASE_TYPE,
                                           replay_barrier_type);

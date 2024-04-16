@@ -803,13 +803,14 @@ int FetchStream::read_group_entry_(palf::LogGroupEntry &group_entry,
   TransStatInfo local_tsi;
 
   if (group_entry.get_header().is_padding_log()) {
-    LOG_DEBUG("GroupLogEntry is_padding_log", K(group_entry), K(group_start_lsn));
+    LOG_INFO("GroupLogEntry is_padding_log", K(group_entry), K(group_start_lsn));
   } else if (OB_FAIL(ls_fetch_ctx_->get_log_entry_iterator(group_entry, group_start_lsn, entry_iter))) {
     LOG_ERROR("get_log_entry_iterator failed", KR(ret), K(group_entry), K_(ls_fetch_ctx));
   } else {
-    LOG_DEBUG("get_next_group_entry succ", K(group_entry), K(group_start_lsn));
+    LOG_INFO("get_next_group_entry succ", K(group_entry), K(group_start_lsn),K(entry_iter));
     // iterate log_entry in log_group and handle it
     while (OB_SUCC(ret)) {
+      LOG_INFO("get_next_group_entry succ22", K(group_entry), K(group_start_lsn));
       palf::LogEntry log_entry;
       palf::LSN entry_lsn;
       IObCDCPartTransResolver::MissingLogInfo missing_info;
@@ -831,11 +832,10 @@ int FetchStream::read_group_entry_(palf::LogGroupEntry &group_entry,
           missing_info,
           local_tsi,
           stop_flag))) {
-        if (OB_ITEM_NOT_SETTED == ret) {
+        if (OB_ITEM_NOT_SETTED == ret) {  
           // handle missing_log_info
           const bool need_reconsume = missing_info.need_reconsume_commit_log_entry();
           KickOutReason fail_reason = NONE;
-
           if (OB_FAIL(handle_log_miss_(group_entry.get_header().get_log_id(),log_entry, missing_info, local_tsi, stop_flag, fail_reason))) {
             if (OB_NEED_RETRY == ret) {
               int tmp_ret = OB_SUCCESS;
@@ -876,7 +876,7 @@ int FetchStream::read_group_entry_(palf::LogGroupEntry &group_entry,
       } else {
         // Update transaction statistics
         tsi.update(local_tsi);
-        LOG_DEBUG("get_log_entry succ", K(log_entry), K(entry_lsn));
+        LOG_INFO("get_log_entry succ", K(log_entry), K(entry_lsn));
       }
     } // while
     // End of iteration
@@ -1398,7 +1398,7 @@ int FetchStream::read_log_(
       int64_t begin_time = get_timestamp();
       palf::LSN group_start_lsn;
       palf::LogGroupEntry group_entry;
-      palf::MemPalfBufferIterator entry_iter;
+      palf::MemPalfBufferIterator entry_iter; 
 
       if (OB_FAIL(ls_fetch_ctx_->get_next_group_entry(group_entry, group_start_lsn))) {
         if (OB_ITER_END != ret) {

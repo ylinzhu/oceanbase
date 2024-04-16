@@ -427,7 +427,7 @@ int ObMulSourceTxDataNotifier::notify_ddl_trans(const NotifyType type,
                                                 const ObMulSourceDataNotifyArg &arg)
 {
   int ret = OB_SUCCESS;
-  TRANS_LOG(DEBUG, "ddl trans commit notify", KR(ret), K(type), KP(buf), K(len));
+  TRANS_LOG(WARN, "ddl trans commit notify", KR(ret), K(type), KP(buf), K(len));
 
   ob_abort_log_cb_notify_(type, ret, arg.for_replay_);
 

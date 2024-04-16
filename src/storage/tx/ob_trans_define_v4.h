@@ -591,6 +591,7 @@ public:
   ObTxAccessMode get_access_mode() const { return access_mode_; }
   bool is_rdonly() const { return access_mode_ == ObTxAccessMode::RD_ONLY; }
   bool is_clean() const { return parts_.empty(); }
+  ObTxPartList getparts_()  const { return parts_; }
   bool is_shadow() const  { return flags_.SHADOW_; }
   bool is_explicit() const { return flags_.EXPLICIT_; }
   void set_with_temporary_table() { flags_.WITH_TEMP_TABLE_ = true; }

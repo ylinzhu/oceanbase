@@ -315,6 +315,7 @@ int ObTabletDrop::execute()
           LOG_WARN("fail to set timeout ctx", KR(ret), K(default_timeout_ts));
         } else {
           do {
+           LOG_WARN("318register_multi_data_source ls_id", K( iter->first.id()));
             if (ctx.is_timeouted()) {
               ret = OB_TIMEOUT;
               LOG_WARN("already timeout", KR(ret), K(ctx));

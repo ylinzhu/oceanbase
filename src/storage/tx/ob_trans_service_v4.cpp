@@ -629,15 +629,17 @@ int ObTransService::decide_tx_commit_info_(ObTxDesc &tx, ObTxPart *&coord)
     } else if (!tx.coord_id_.is_valid() && parts[i].addr_ == self_) {
       tx.coord_id_ = parts[i].id_;
       coord = &parts[i];
-    } else if (OB_ISNULL(coord)) {
+    } else if (OB_ISNULL(coord)) {  
       coord = &parts[i];
     }
+    TRANS_LOG(WARN, "for tx coord", K(ret), K(parts[i].id_));
+
   }
   if (OB_SUCC(ret) && !tx.coord_id_.is_valid() && OB_NOT_NULL(coord)) {
     tx.coord_id_ = coord->id_;
   }
 
-  TRANS_LOG(TRACE, "decide tx coord", K(ret), K_(tx.coord_id), K(*this), K(tx));
+  TRANS_LOG(WARN, "decide tx coord", K(ret), K_(tx.coord_id), K(*this), K(tx));
   return ret;
 }
 
@@ -1215,7 +1217,7 @@ int ObTransService::create_tx_ctx_(const share::ObLSID &ls_id,
   } else if (!tx.xid_.empty() && !existed) {
     ctx->exec_info_.xid_ = tx.xid_;
   }
-  TRANS_LOG(TRACE, "create tx ctx", K(ret), K(ls_id), K(tx));
+  TRANS_LOG(WARN, "create tx ctx", K(ret), K(ls_id), K(tx));
   return ret;
 }
 
@@ -1271,6 +1273,7 @@ int ObTransService::revert_store_ctx(storage::ObStoreCtx &store_ctx)
       p.epoch_      = tx_ctx->epoch_;
       p.first_scn_  = tx_ctx->first_scn_;
       p.last_scn_   = tx_ctx->last_scn_;
+      TRANS_LOG(WARN, "append part start", K(ret), K(p), KPC(tx_ctx));
       if (OB_FAIL(tx->update_part(p))) {
         TRANS_LOG(WARN, "append part fail", K(ret), K(p), KPC(tx_ctx));
       }
@@ -1463,8 +1466,11 @@ int ObTransService::collect_tx_exec_result(ObTxDesc &tx,
                                            ObTxExecResult &result)
 {
   int ret = OB_SUCCESS;
+  TRANS_LOG(WARN, "collect tx exec tx", K(ret), K(tx.parts_[0].id_));
+  TRANS_LOG(WARN, "collect tx exec tx", K(ret), K(tx.parts_[1].id_));
   ret = get_tx_exec_result(tx, result);
-  TRANS_LOG(TRACE, "collect tx exec result", K(ret), K(tx), K(result), K(lbt()));
+  TRANS_LOG(WARN, "collect tx exec result0", K(ret), K(result.parts_[0].id_));
+  TRANS_LOG(WARN, "collect tx exec result1", K(ret), K(result.parts_[1].id_));
   return ret;
 }
 

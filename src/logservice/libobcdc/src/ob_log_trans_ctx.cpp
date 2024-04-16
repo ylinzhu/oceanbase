@@ -12,6 +12,8 @@
  *  TransCtx: Context for Distributed Transactions
  */
 
+#include "lib/oblog/ob_log_module.h"
+#include "ob_log_utils.h"
 #define USING_LOG_PREFIX OBLOG
 
 #include "ob_log_trans_ctx.h"
@@ -312,6 +314,7 @@ int TransCtx::prepare_(
     int64_t part_count = host.get_participant_count();
     const int64_t trans_commit_version = host.get_trans_commit_version();
     int64_t log_id = host.get_log_id();
+    LOG_WARN("init log_id",K(log_id),K(trans_id_.get_id()), K(host_tls_id));
     tenant_id_ = tenant_id;
     trans_id_ = trans_id;
     log_id_ = log_id;
@@ -429,7 +432,6 @@ int TransCtx::prepare_(
       }
     }
   }
-
   return ret;
 }
 
@@ -439,7 +441,7 @@ int TransCtx::init_trans_id_str_()
   static const int TRANS_ID_STR_BUF_LEN = 40; // uint64_t(tenant_id, 20) + "_" + int64_t(tx_id, 10)
   char trans_id_buf[TRANS_ID_STR_BUF_LEN];
   int64_t pos = 0;
-
+  LOG_WARN("init log_id",K(log_id_),K(trans_id_.get_id()));
   if (OB_FAIL(common::databuff_printf(trans_id_buf, TRANS_ID_STR_BUF_LEN, pos, "%lu_%ld_%ld", tenant_id_, trans_id_.get_id(), log_id_))) {
     LOG_ERROR("databuff_printf trans_id_str failed", KR(ret), K_(tenant_id), K_(trans_id), K(TRANS_ID_STR_BUF_LEN), K(pos));
   } else if (OB_UNLIKELY(pos <= 0 || pos >= TRANS_ID_STR_BUF_LEN)) {
@@ -494,11 +496,14 @@ int TransCtx::add_ready_participant_(
       if (part_trans_task.get_tls_id() == participants_[index].tls_id_) {
         existed = true;
         participants_[index].obj_ = &part_trans_task;
+        LOG_WARN("get log_id1", K(index),K(participant_count_));
          //todo hard code
         if (1 == part_trans_task.get_ls_id().id()){
           for (int64_t index = 0; index < participant_count_; index++) {
             if (OB_ISNULL(participants_[index].obj_)) {
+              LOG_WARN("get log_id2", K(index),K(participant_count_));
             } else if (1001 == participants_[index].obj_->get_ls_id().id()) {
+              LOG_WARN("get log_id3", K(index),K(participant_count_));
               log_id_ = participants_[index].obj_->get_log_id();
               break;
             }
@@ -507,6 +512,7 @@ int TransCtx::add_ready_participant_(
           for (int64_t index = 0; index < participant_count_; index++) {
             if (OB_ISNULL(participants_[index].obj_)) {
             } else if (1 == participants_[index].obj_->get_ls_id().id()) {
+              LOG_WARN("get log_id4", K(index),K(participant_count_));
               log_id_ = part_trans_task.get_log_id();
               break;
             }

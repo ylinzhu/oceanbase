@@ -207,7 +207,7 @@ int ObTableCreator::add_create_tablets_of_tables_arg_(
         data_table_schema = &table_schema;
       }
     }
-
+   LOG_WARN("ls_id_array_", KR(ret), K(ls_id_array.at(0).id()));
     if (FAILEDx(pairs.reserve(all_part_num * schema_cnt))) {
       LOG_WARN("fail to reserve array", KR(ret), K(all_part_num), K(schema_cnt));
     } else if (OB_FAIL(ls_id_array_.reserve(all_part_num))) {

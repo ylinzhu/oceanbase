@@ -12,6 +12,7 @@
  * Formatter
  */
 
+#include "lib/oblog/ob_log_module.h"
 #define USING_LOG_PREFIX OBLOG_FORMATTER
 
 #include "ob_log_formatter.h"
@@ -1986,6 +1987,7 @@ int ObLogFormatter::init_dml_unique_id_(DmlStmtTask &stmt_task,
     LOG_ERROR("get_redo_log_lsn from log_entry_task failed", KR(ret), K(log_entry_task), K(redo_log_lsn));
   } else {
     DmlStmtUniqueID dml_stmt_unique_id(part_trans_info_str, redo_log_lsn, row_no);
+    LOG_INFO("get_redo_log_lsn from log_entry_task suce", KR(ret), K(log_entry_task), K(redo_log_lsn));
 
     if (OB_UNLIKELY(! dml_stmt_unique_id.is_valid())) {
       LOG_ERROR("dml_stmt_unique_id is not valid", K(dml_stmt_unique_id));

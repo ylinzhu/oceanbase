@@ -182,7 +182,7 @@ int ObCDCPartTransResolver::read(
   } else if (cluster_id_filter_.check_is_served(tx_log_block_header.get_org_cluster_id(), is_cluster_id_served)) {
     LOG_ERROR("check_cluster_id_served failed", KR(ret), K_(tls_id), K(lsn), K(tx_log_block_header));
   } else if (OB_UNLIKELY(!is_cluster_id_served)) {
-    LOG_DEBUG("[STAT] [FETCHER] [TRANS_NOT_SERVE]", K_(tls_id), K(is_cluster_id_served), K(lsn));
+    LOG_INFO("[STAT] [FETCHER] [TRANS_NOT_SERVE]", K_(tls_id), K(is_cluster_id_served), K(lsn));
   } else {
     // has redo-like tx_log in log_entry, including
     // ObTxRedoLog/ObTxMultiDataSourceLog/ObTxRollbackToLog
@@ -289,7 +289,7 @@ int ObCDCPartTransResolver::read_trans_log_(
   const transaction::ObTransID &tx_id = tx_log_block_header.get_tx_id();
   const bool handling_miss_log = missing_info.is_resolving_miss_log();
   const transaction::ObTxLogType log_type = tx_log_header.get_tx_log_type();
-
+  LOG_INFO("log_type is", K(log_type), K_(tls_id), K(tx_id), K(lsn), K(log_id));    
   switch (log_type) {
     case transaction::ObTxLogType::TX_REDO_LOG:
     {
@@ -878,11 +878,14 @@ int ObCDCPartTransResolver::obtain_task_(
       } else if (OB_FAIL(part_trans_dispatcher_.alloc_task(part_trans_id, part_trans_task))) {
           LOG_ERROR("alloc part_trans_task fail", KR(ret), K_(tls_id), K(tx_id), K(is_resolving_miss_log));
       } else {
+        LOG_INFO("obtain part_trans_task suc", KR(ret), K_(tls_id), K(tx_id), K(log_id));
         part_trans_task->set_log_id(log_id);
       }
     } else {
       LOG_ERROR("get part_trans_task fail", KR(ret), K_(tls_id), K(tx_id), K(is_resolving_miss_log));
     }
+  }else {
+    LOG_INFO("get part_trans_task end", KR(ret), K_(tls_id), K(tx_id), K(log_id));
   }
 
   if (OB_SUCC(ret) && OB_ISNULL(part_trans_task)) {

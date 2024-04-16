@@ -397,6 +397,7 @@ public:
                             AlterTableSchema &inc_table_schema,
                             share::schema::ObSchemaGetterGuard &schema_guard,
                             ObArenaAllocator &allocator);
+  int execute(ObDDLSQLTransaction &trans_, share::schema::ObDatabaseSchema &database_schema, const share::SCN &major_frozen_scn);
 
   // execute alter_table_partitions for some tables which are data table and its local indexes
   //

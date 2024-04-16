@@ -355,6 +355,7 @@ int ObPartTransCtx::post_msg(const ObTwoPhaseCommitMsgType& msg_type,
   } else {
     receiver = exec_info_.participants_[participant_id];
   }
+  TRANS_LOG(WARN, "post msg mean", K(receiver), K(*this));
 
 
   if (OB_SUCC(ret)

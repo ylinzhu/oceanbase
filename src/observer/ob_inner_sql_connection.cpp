@@ -1050,7 +1050,13 @@ int ObInnerSQLConnection::register_multi_data_source(const uint64_t &tenant_id,
           // TODO ADD LOG and check get_session
           ret = OB_ERR_UNEXPECTED;
           LOG_WARN("Invalid tx_desc", K(ls_id), K(type));
+          
         } else {
+          TRANS_LOG(WARN, "1055collect tx exec0", K(ls_id.id()), K(tx_desc->getparts_()[0].id_));
+          TRANS_LOG(WARN, "1055collect tx exec1", K(ls_id.id()), K(tx_desc->getparts_()[1].id_));
+
+           LOG_WARN("register_mds_into_tx0", K(ls_id.id()), K(tx_desc->getparts_()[0].id_));
+           LOG_WARN("register_mds_into_tx1", K(ls_id.id()), K(tx_desc->getparts_()[1].id_));
           MTL_SWITCH(tenant_id) {
             if (OB_FAIL(MTL(transaction::ObTransService *)
                                    ->register_mds_into_tx(*tx_desc, ls_id, type, buf, buf_len))) {
@@ -1301,6 +1307,9 @@ int ObInnerSQLConnection::request_table_lock_(const uint64_t tenant_id,
           ret = OB_ERR_UNEXPECTED;
           LOG_WARN("Invalid tx_desc");
         } else {
+            TRANS_LOG(WARN, "1311collect tx exec tx0", K(ret), K(tx_desc->getparts_()[0].id_));
+            TRANS_LOG(WARN, "1311collect tx exec tx1", K(ret), K(tx_desc->getparts_()[1].id_));
+
           MTL_SWITCH(tenant_id) {
             switch (operation_type) {
             case ObInnerSQLTransmitArg::OPERATION_TYPE_LOCK_TABLE: {

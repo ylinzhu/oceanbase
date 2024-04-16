@@ -237,7 +237,7 @@ int ObLogHandler::append(const void *buffer,
         cb->__set_lsn(lsn);
         cb->__set_scn(scn);
         ret = apply_status_->push_append_cb(cb);
-        CLOG_LOG(TRACE, "palf_handle_ push_append_cb success", K(lsn), K(scn), K(ret), K(id_));
+        CLOG_LOG(WARN, "palf_handle_ push_append_cb success", K(lsn), K(scn), K(ret), K(id_));
       }
     } while (0);
     // check if need wait and retry append

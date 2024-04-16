@@ -12,6 +12,7 @@
  * Committer
  */
 
+#include "lib/oblog/ob_log_module.h"
 #define USING_LOG_PREFIX OBLOG_COMMITTER
 
 #include "ob_log_committer.h"
@@ -961,6 +962,7 @@ int ObLogCommitter::handle_ddl_stmt_(int64_t log_id, DdlStmtTask &stmt_task)
     // If the binlog record is valid, output
     // DDL push to the next element in the BRQueue, the next element in the chain is empty
     std::string log_id_str = std::to_string(log_id);
+    LOG_INFO("log_id_str is", K(log_id), K(br));
     br->get_data()->putFilterRuleVal(log_id_str.c_str(), log_id_str.length());
     br->set_next(NULL);
 

@@ -313,7 +313,7 @@ int LSFetchCtx::get_next_group_entry(palf::LogGroupEntry &group_entry, palf::LSN
   } else if (OB_FAIL(group_iterator_.get_entry(group_entry, lsn))) {
     LOG_ERROR("get_next_group_entry failed", KR(ret), K_(group_iterator));
   } else { /* success */ }
-
+    LOG_INFO("PalfIterator get_entry SUCE", KR(ret), K(group_entry), K(lsn));
   return ret;
 }
 
@@ -421,7 +421,7 @@ int LSFetchCtx::read_log(
   const int64_t submit_ts = log_entry.get_scn().get_val_for_logservice();
   int64_t pos = 0;
   logservice::ObLogBaseHeader log_base_header;
-
+  LOG_INFO("read_log res", KR(ret), K(log_entry), K(log_id), K(lsn), K_(tls_id));
   if (OB_ISNULL(part_trans_resolver_)) {
     ret = OB_INVALID_ERROR;
     LOG_ERROR("invalid part trans resolver", KR(ret), K_(part_trans_resolver));
@@ -434,7 +434,7 @@ int LSFetchCtx::read_log(
     LOG_ERROR("deserialize_log_entry_base_header_ failed", KR(ret), K(log_entry), K(pos), K(lsn), K_(tls_id));
   } else {
     const logservice::ObLogBaseType &base_type = log_base_header.get_log_type();
-
+    LOG_INFO("base_type res", K(base_type), K(log_entry), K(log_id), K(lsn), K_(tls_id));
     switch (base_type) {
       case logservice::ObLogBaseType::TRANS_SERVICE_LOG_BASE_TYPE:
       {
@@ -448,7 +448,7 @@ int LSFetchCtx::read_log(
       case logservice::ObLogBaseType::KEEP_ALIVE_LOG_BASE_TYPE:
       {
         // update progress while group_entry consumed (in fetch_stream)
-        LOG_DEBUG("LOG_STREAM_KEEP_ALIVE", K_(tls_id), K(submit_ts));
+        LOG_INFO("LOG_STREAM_KEEP_ALIVE", K_(tls_id), K(submit_ts));
         break;
       }
       case logservice::ObLogBaseType::GC_LS_LOG_BASE_TYPE:
@@ -462,7 +462,7 @@ int LSFetchCtx::read_log(
       case logservice::ObLogBaseType::DATA_DICT_LOG_BASE_TYPE:
       {
         // TODO remove
-        LOG_DEBUG("data_dict redo log", K(tls_id_), K(lsn), K(log_entry));
+        LOG_INFO("data_dict redo log", K(tls_id_), K(lsn), K(log_entry));
 
         if (is_loading_data_dict_baseline_data_) {
           const palf::LSN &data_dict_baseline_start_lsn = start_parameters_.get_data_dict_in_log_info().start_lsn_;
@@ -490,7 +490,7 @@ int LSFetchCtx::read_log(
         if (OB_FAIL(log_base_type_to_string(base_type, log_base_type_str, logservice::OB_LOG_BASE_TYPE_STR_MAX_LEN))) {
           LOG_ERROR("log_base_type_to_string failed", KR(ret), K(log_base_type_str));
         } else {
-          LOG_DEBUG("ignore palf log", K(log_base_type_str), K(log_base_header), K(log_entry));
+          LOG_INFO("ignore palf log", K(log_base_type_str), K(log_base_header), K(log_entry));
         }
 
         break;

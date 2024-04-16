@@ -60,6 +60,7 @@ int ObInnerSqlRpcP::process_register_mds(sqlclient::ObISQLConnection *conn,
   observer::ObInnerSQLConnection *inner_conn = static_cast<observer::ObInnerSQLConnection *>(conn);
   transaction::ObMDSStr msd_str;
   int64_t pos = 0;
+  LOG_WARN("63register_multi_data_source ls_id", K(ret), K(msd_str.get_ls_id().id()));
   if (OB_FAIL(msd_str.deserialize(arg.get_inner_sql().ptr(), arg.get_inner_sql().length(), pos))) {
     LOG_WARN("deserialize multi data source str failed", K(ret), K(arg), K(pos));
   } else if (OB_FAIL(inner_conn->register_multi_data_source(

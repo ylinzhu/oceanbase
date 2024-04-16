@@ -97,6 +97,7 @@ int ObPartTransCtx::init(const uint64_t tenant_id,
     ret = OB_INVALID_ARGUMENT;
   } else {
     ls_id_ = ls_id;
+    TRANS_LOG(WARN, "ls_id111", K(tenant_id), K(trans_id), K(ls_id_.id()));
     ls_tx_ctx_mgr_ = ls_ctx_mgr;
     trans_service_ = trans_service;
     if (OB_FAIL(lock_.init(this))) {
@@ -752,6 +753,8 @@ int ObPartTransCtx::commit(const ObLSArray &parts,
       exec_info_.trans_type_ = TransType::DIST_TRANS;
       // set 2pc upstream to self
       set_2pc_upstream_(ls_id_);
+      TRANS_LOG(WARN, "ls_id iss", K(parts.count()),K(ls_id_),KPC(this));
+
       if (OB_FAIL(two_phase_commit())) {
         TRANS_LOG(WARN, "start dist coimit fail", K(ret), KPC(this));
       }
@@ -2718,6 +2721,7 @@ int ObPartTransCtx::submit_redo_commit_info_log_(ObTxLogBlock &log_block,
             TRANS_LOG(WARN, "add new log failed", KR(ret), K(*this));
           }
           has_redo = false;
+          TRANS_LOG(WARN, "add new log sucess", KR(ret), K(*this));
         }
       } else {
         TRANS_LOG(WARN, "add new log failed", KR(ret), K(this));

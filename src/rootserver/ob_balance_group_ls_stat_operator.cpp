@@ -705,6 +705,8 @@ int ObNewTableTabletAllocator::alloc_tablet_for_create_balance_group(
         if (OB_FAIL(ls_id_array_.push_back(ls_id))) {
           LOG_WARN("fail to push back", KR(ret));
         }
+        LOG_WARN("suc to push back ls_id", K( ls_id.id()));
+
       }
       if (OB_SUCC(ret)) {
         ObBalanceGroupLSStat bg_ls_stat;
@@ -841,6 +843,7 @@ int ObNewTableTabletAllocator::alloc_tablet_for_add_balance_group(
           if (OB_FAIL(ls_id_array_.push_back(bg_ls_stat.get_ls_id()))) {
             LOG_WARN("fail to push back", KR(ret));
           }
+           LOG_WARN("846suc to push back ls_id", K( bg_ls_stat.get_ls_id().id()));
         }
       }
       if (OB_SUCC(ret)) {

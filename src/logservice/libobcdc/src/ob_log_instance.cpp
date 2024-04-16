@@ -944,6 +944,7 @@ int ObLogInstance::init_components_(uint64_t start_tstamp_ns)
             K(svr_err), "svr", srv, K(rpc_req), K(rpc_res));
       }
       const ObCdcReqStartLSNByTsResp::LocateResult &result = rpc_res.get_results().at(0);
+      LOG_INFO("locate lsn by log id sucess", K(start_tstamp_ns_), K(start_tstamp_usec), K(result));
       start_tstamp_usec = result.start_ts_ns_ / NS_CONVERSION;
       start_tstamp_ns_ = result.start_ts_ns_;
       start_tstamp_ns = result.start_ts_ns_;

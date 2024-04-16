@@ -178,7 +178,7 @@ public:
     } else if (OB_FAIL(iterator_impl_.get_entry(entry, lsn, unused_is_raw_write)) && OB_ITER_END != ret) {
       PALF_LOG(WARN, "PalfIterator get_entry failed", K(ret), K(entry), K(lsn), KPC(this));
     } else {
-      PALF_LOG(TRACE, "PalfIterator get_entry success", K(ret), KPC(this),
+      PALF_LOG(WARN, "PalfIterator get_entry success", K(ret), KPC(this),
           K(entry), K(lsn));
     }
     return ret;

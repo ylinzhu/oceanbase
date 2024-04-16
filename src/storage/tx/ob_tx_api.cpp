@@ -1662,8 +1662,10 @@ int ObTransService::merge_tx_state(ObTxDesc &to, const ObTxDesc &from)
 }
 int ObTransService::get_tx_exec_result(ObTxDesc &tx, ObTxExecResult &exec_info)
 {
-  TRANS_LOG(TRACE, "get_tx_exec_result", K(tx), K(exec_info));
+  TRANS_LOG(INFO, "get_tx_exec_result", K(tx), K(exec_info));
   int ret = tx.get_inc_exec_info(exec_info);
+  TRANS_LOG(WARN, "get_tx_exec_result",  K(tx),K(exec_info));
+
   return ret;
 }
 int ObTransService::add_tx_exec_result(ObTxDesc &tx, const ObTxExecResult &exec_info)

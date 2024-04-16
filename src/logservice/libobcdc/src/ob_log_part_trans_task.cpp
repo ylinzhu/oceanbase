@@ -2483,7 +2483,7 @@ int PartTransTask::push_multi_data_source_data(
         }
       }
 
-      LOG_DEBUG("found multi_data_source data", KR(ret), K_(tls_id), K_(trans_id), K(lsn),
+      LOG_WARN("found multi_data_source data", KR(ret), K_(tls_id), K_(trans_id), K(lsn),
           K(is_commit_log), K(mds_buffer_node), K_(multi_data_source_info), K_(multi_data_source_node_arr));
     }
 

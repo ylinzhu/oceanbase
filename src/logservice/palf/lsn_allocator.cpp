@@ -478,7 +478,7 @@ int LSNAllocator::alloc_lsn_scn(const SCN &base_scn,
             PALF_LOG(ERROR, "failed to convert scn", K(ret), K(base_scn), K(scn));
           }
 
-          PALF_LOG(TRACE, "alloc_lsn_ts succ", K(ret), K(base_scn), K(size), K(lsn), K(last.lsn_val_),
+          PALF_LOG(INFO, "alloc_lsn_ts succ", K(ret), K(base_scn), K(size), K(lsn), K(last.lsn_val_),
                K(next.lsn_val_), "next.is_need_cut", next.is_need_cut_, K(log_id), K(scn));
           break;
         } else {

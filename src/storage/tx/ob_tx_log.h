@@ -1163,6 +1163,7 @@ int ObTxLogBlock::add_new_log(T &tx_log_body, ObTxBigSegmentBuf *big_segment_buf
       ret = OB_LOG_TOO_LARGE;
     }
   }
+  TRANS_LOG(WARN, "add new log sucess111", KR(ret),K(tx_log_body), K(*this));
 
   if (OB_FAIL(ret)) {
     TRANS_LOG(WARN, "[TxLogBlock] add new log", K(ret), K(tx_log_body), K(*this), K(tmp_pos));

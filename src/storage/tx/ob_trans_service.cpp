@@ -695,6 +695,8 @@ int ObTransService::register_mds_into_tx(ObTxDesc &tx_desc,
   tx_param.isolation_ = tx_desc.isolation_;
   tx_param.timeout_us_ = tx_desc.timeout_us_;
   int64_t savepoint = 0;
+    TRANS_LOG(WARN, "698collect tx exec tx0", K(ret), K(tx_desc.parts_[0].id_));
+    TRANS_LOG(WARN, "698collect tx exec tx1", K(ret), K(tx_desc.parts_[1].id_));
   if (OB_UNLIKELY(!tx_desc.is_valid() || !ls_id.is_valid() || type <= ObTxDataSourceType::UNKNOWN
                   || type >= ObTxDataSourceType::MAX_TYPE || OB_ISNULL(buf) || buf_len < 0)) {
     ret = OB_INVALID_ARGUMENT;
@@ -730,6 +732,8 @@ int ObTransService::register_mds_into_tx(ObTxDesc &tx_desc,
 
         time_guard.click("register in ctx begin");
         do {
+          TRANS_LOG(WARN, "733collect tx exec tx0", K(ls_id.id()), K(arg.tx_desc_->parts_[0].id_));
+          TRANS_LOG(WARN, "733collect tx exec tx1", K(ls_id.id()), K(arg.tx_desc_->parts_[1].id_));
           if (OB_FAIL(register_mds_into_ctx(*(arg.tx_desc_), ls_id, type, buf, buf_len))) {
             TRANS_LOG(WARN, "register msd into ctx failed", K(ret));
             if (OB_EAGAIN == ret) {
@@ -750,6 +754,8 @@ int ObTransService::register_mds_into_tx(ObTxDesc &tx_desc,
         time_guard.click("register in ctx end");
 
         // collect participants regardless of register error
+        TRANS_LOG(WARN, "753collect tx exec tx0", K(ls_id.id()), K(arg.tx_desc_->parts_[0].id_));
+        TRANS_LOG(WARN, "753collect tx exec tx1", K(ls_id.id()), K(arg.tx_desc_->parts_[1].id_));
         if (OB_TMP_FAIL(collect_tx_exec_result(*(arg.tx_desc_), result.tx_result_))) {
           TRANS_LOG(WARN, "collect tx exec result failed", K(ret));
         } else if (OB_TMP_FAIL(tx_result.merge_result(result.tx_result_))) {
@@ -866,7 +872,7 @@ int ObTransService::register_mds_into_ctx(ObTxDesc &tx_desc,
       TRANS_LOG(WARN, "revert store ctx failed", KR(tmp_ret), K(tx_desc), K(ls_id), K(type));
     }
   }
-  TRANS_LOG(DEBUG, "register multi source data on participant", KR(ret), K(tx_desc), K(ls_id), K(type));
+  TRANS_LOG(INFO, "register multi source data on participant", KR(ret), K(tx_desc), K(ls_id), K(type));
   return ret;
 }
 

@@ -586,6 +586,7 @@ int ObTxDesc::update_part_(ObTxPart &a, const bool append)
         flags_.PARTS_INCOMPLETE_ = true;
         TRANS_LOG(WARN, "push fail, set incomplete", K(ret), K_(parts), K(a));
       } else {
+       TRANS_LOG(WARN, "push sucss, set incomplete", K(ret), K(parts_[0].id_), K(a.id_));
         implicit_start_tx_();
       }
     } else {
@@ -670,7 +671,9 @@ int ObTxDesc::update_parts_(const ObTxPartList &list)
   ARRAY_FOREACH(list, i) {
     bool hit = false;
     auto &a = list[i];
+    TRANS_LOG(WARN, "update parts 674", K(ret), K(const_cast<ObTxPart&>(a)));
     ret = update_part_(const_cast<ObTxPart&>(a));
+
   }
   return ret;
 }
@@ -700,7 +703,9 @@ int ObTxDesc::get_inc_exec_info(ObTxExecResult &exec_info)
           OB_FAIL(exec_info.parts_.push_back(p))) {
         TRANS_LOG(WARN, "push fail", K(ret), K(p), KPC(this), K(exec_info));
       }
+    TRANS_LOG(WARN, "push suce exec_info", K(ret), K(p), KPC(this), K(exec_info));
     }
+
     if (OB_FAIL(ret) || flags_.PARTS_INCOMPLETE_) {
       exec_info.incomplete_ = true;
       TRANS_LOG(WARN, "set incomplete", K(ret), K(flags_.PARTS_INCOMPLETE_));

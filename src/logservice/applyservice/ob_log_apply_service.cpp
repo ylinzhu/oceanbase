@@ -480,7 +480,7 @@ int ObApplyStatus::try_handle_cb_queue(ObApplyServiceQueueTask *cb_queue,
         } else {
           scn = cb->__get_scn();
           get_cb_trace_(cb, append_start_time, append_finish_time, cb_first_handle_time, cb_start_time);
-          CLOG_LOG(TRACE, "cb on_success", K(lsn), K(scn), KP(link->next_), KPC(cb_queue), KPC(this));
+          CLOG_LOG(INFO, "cb on_success", K(lsn), K(scn), KP(link->next_), KPC(cb_queue), KPC(this));
           if (OB_FAIL(cb->on_success())) {
             // 不处理此类失败情况
             CLOG_LOG(ERROR, "cb on_success failed", KP(cb), K(ret), KPC(this));
